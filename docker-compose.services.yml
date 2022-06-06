@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+    pools:
+        image: arb_services/pools:${TAG:-latest}
+
+    pools_data_fetcher:
+        image: arb_services/pools_data_fetcher:${TAG:-latest}
+        #build:
+        #    context: ./services/pool_datastream_fetcher
+        #    dockerfile: Dockerfile
+        #ports:
+        #    - '4200:4200'
+        depends_on:
+            - kafka
+            - pools
+
+    pools_data_processor:
+        image: arb_services/pools_data_processor:${TAG:-latest}
+        #ports:
+        #    - '4201:4201'
+        depends_on:
+            - kafka
+    
+    opportunities_primary_search:
+        image: arb_services/opportunities_primary_search:${TAG:-latest}
+        depends_on:
+            - kafka
+
+    opportunities_prepare:
+        image: arb_services/opportunities_prepare:${TAG:-latest}
+        depends_on:
+            - kafka
+  
+    arbitrage_execute:
+        image: arb_services/arbitrage_execute:${TAG:-latest}
+        depends_on:
+            - kafka
+            - pools

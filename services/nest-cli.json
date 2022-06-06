@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/services/src",
+  "monorepo": true,
+  "root": "apps/services",
+  "compilerOptions": {
+    "webpack": true,
+    "tsConfigPath": "apps/services/tsconfig.app.json"
+  },
+  "projects": {
+    "services": {
+      "type": "application",
+      "root": "apps/services",
+      "entryFile": "main",
+      "sourceRoot": "apps/services/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/services/tsconfig.app.json"
+      }
+    },
+    "pools": {
+      "type": "application",
+      "root": "apps/pools",
+      "entryFile": "main",
+      "sourceRoot": "apps/pools/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/pools/tsconfig.app.json"
+      }
+    },
+    "pools_data_fetcher": {
+      "type": "application",
+      "root": "apps/pools_data_fetcher",
+      "entryFile": "main",
+      "sourceRoot": "apps/pools_data_fetcher/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/pools_data_fetcher/tsconfig.app.json"
+      }
+    },
+    "pools_data_processor": {
+      "type": "application",
+      "root": "apps/pools_data_processor",
+      "entryFile": "main",
+      "sourceRoot": "apps/pools_data_processor/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/pools_data_processor/tsconfig.app.json"
+      }
+    },
+    "arbitrage_execute": {
+      "type": "application",
+      "root": "apps/arbitrage_execute",
+      "entryFile": "main",
+      "sourceRoot": "apps/arbitrage_execute/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/arbitrage_execute/tsconfig.app.json"
+      }
+    },
+    "meta": {
+      "type": "library",
+      "root": "libs/meta",
+      "entryFile": "index",
+      "sourceRoot": "libs/meta/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/meta/tsconfig.lib.json"
+      }
+    }
+  }
+}
