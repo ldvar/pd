@@ -3,9 +3,7 @@ prerequisites:
 
 install nest...
 
-sudo apt install make
-
-sudo apt install docker-compose
+sudo apt install make pkg-config docker-compose libssl-dev rustc rust-src
 
 
 prepare storage:
