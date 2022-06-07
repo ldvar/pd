@@ -49,3 +49,5 @@ data/*
 .docker-data
 
 .kafka.config
+
+/storage

@@ -1,12 +1,18 @@
+
 prerequisites:
 
 install nest...
 
 sudo apt install make
+
 sudo apt install docker-compose
 
 
-only data services:
+prepare storage:
 
-sudo make data_services_up
-sudo make data_services_down
+sudo make prepare_storage
+
+
+start persistence/communication services:
+
+sudo make data_services_up 
