@@ -1,33 +1,30 @@
 
+mod graph;
+mod config;
+mod kafka;
+mod handle;
+mod model;
+mod process;
+mod task;
+
+use futures::future::join_all;
+use structopt::StructOpt;
 use tokio::runtime::Runtime;
 
-use petgraph::Graph;
-use petgraph::prelude::*;
+use config::Config;
+use task::task;
 
-mod find_negative_cycles;
-use find_negative_cycles::find_negative_cycles;
-
+//#[tokio::main]
 fn main() {
-    let graph = Graph::<(), f32, Directed>::from_edges(&[
-        (0, 1, 1.),
-        (0, 2, 1.),
-        (0, 3, 1.),
-        (1, 3, 1.),
-        (2, 1, 1.),
-        (3, 2, -3.),
-    ]);
+    let config = Config::from_args();
 
-    let cycles = find_negative_cycles(&graph, NodeIndex::new(0));
+    Runtime::new().unwrap().block_on(async {
+        let futures =
+            (0..config.parallel_operations)
+                .map(|_| {
+                    tokio::spawn(task(config.clone()))
+                });
 
-    match cycles {
-        Some(cycles) => {
-            for cycle in cycles {
-                for node in cycle {
-                    println!("{:?}", node)
-                }
-                println!();
-            }
-        },
-        None => { println!("syka") }
-    }
+        join_all(futures).await;
+    });
 }

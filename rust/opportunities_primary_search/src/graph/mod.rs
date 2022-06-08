@@ -1,23 +1,24 @@
 
-use petgraph::visit::{IntoEdges, IntoNodeIdentifiers, NodeCount, NodeIndexable, VisitMap, Visitable, GraphBase};
+use petgraph::visit::{IntoEdges, IntoNodeIdentifiers, NodeCount, NodeIndexable, VisitMap, Visitable};
 use petgraph::prelude::*;
 use petgraph::algo::FloatMeasure;
 
-
-type Path<G> = Vec<<G as GraphBase>::NodeId>;
+pub(crate) mod model;
+use crate::graph::model::{Path, EdgePath};
 
 
 // bellman-fold 1st step from petgraph (private crate fn)
 fn bellman_ford_initialize_relax<G>(
     g: G,
     source: G::NodeId,
-) -> (Vec<G::EdgeWeight>, Vec<Option<G::NodeId>>)
+) -> (Vec<G::EdgeWeight>, Vec<Option<G::NodeId>>, Vec<Option<G::EdgeId>>)
 where
     G: NodeCount + IntoNodeIdentifiers + IntoEdges + NodeIndexable,
     G::EdgeWeight: FloatMeasure,
 {
     // Step 1: initialize graph
     let mut predecessor = vec![None; g.node_bound()];
+    let mut predecessor_edge = vec![None; g.node_bound()];
     let mut distance = vec![<_>::infinite(); g.node_bound()];
     let ix = |i| g.to_index(i);
     distance[ix(source)] = <_>::zero();
@@ -32,6 +33,7 @@ where
                 if distance[ix(i)] + w < distance[ix(j)] {
                     distance[ix(j)] = distance[ix(i)] + w;
                     predecessor[ix(j)] = Some(i);
+                    predecessor_edge[ix(j)] = Some(edge.id());
                     did_update = true;
                 }
             }
@@ -40,23 +42,27 @@ where
             break;
         }
     }
-    (distance, predecessor)
+    (distance, predecessor, predecessor_edge)
 }
 
 
-pub fn find_negative_cycles<G>(g: G, source: G::NodeId) -> Option<Vec<Path<G>>>
+pub fn find_negative_cycles<G>(g: G, source: G::NodeId) 
+    -> Option<(Vec<Path<G>>, Vec<EdgePath<G>>)>
 where
     G: NodeCount + IntoNodeIdentifiers + IntoEdges + NodeIndexable + Visitable,
     G::EdgeWeight: FloatMeasure,
 {
     let ix = |i| g.to_index(i);
     let mut paths = Vec::<Path<G>>::new();
-
+    let mut edge_paths = Vec::<EdgePath<G>>::new();
     // Step 1: initialize and relax
-    let (distance, predecessor) = bellman_ford_initialize_relax(g, source);
+    let (distance,
+         predecessor,
+         predecessor_edge) = bellman_ford_initialize_relax(g, source);
 
     // Step 2: Check for negative weight cycle
-    'outer: for i in g.node_identifiers() {
+    //'outer: 
+    for i in g.node_identifiers() {
         for edge in g.edges(i) {
             let j = edge.target();
             let w = *edge.weight();
@@ -67,12 +73,21 @@ where
                 let mut visited = g.visit_map();
 
                 let mut path = Vec::<G::NodeId>::new();
+                let mut edge_path = Vec::<G::EdgeId>::new();
 
                 // Go backward in the predecessor chain
                 loop {
-                    let ancestor = match predecessor[ix(node)] {
-                        Some(predecessor_node) => predecessor_node,
-                        None => node, // no predecessor, self cycle
+                    let ancestor;
+                    let ancestor_edge;
+                    match predecessor[ix(node)] {
+                        Some(predecessor_node) => { 
+                            ancestor = predecessor_node;
+                            ancestor_edge = predecessor_edge[ix(node)].expect("быть такого не должно");
+                        },
+                        None => { // no predecessor, self cycle
+                            ancestor = node;
+                            ancestor_edge = edge.id(); // todo: ИСПРАВИТЬ, ЭТО АБСОЛЮТНО НЕВЕРНО, НО СИТУАЦИИ ТАКОЙ БЫТЬ НЕ ДОЛЖНО
+                        } 
                     };
                     // We have only 2 ways to find the cycle and break the loop:
                     // 1. start is reached
@@ -88,31 +103,31 @@ where
                             .position(|&p| p == ancestor)
                             .expect("we should always have a position");
                         path = path[pos..path.len()].to_vec();
+                        edge_path = edge_path[pos..path.len()].to_vec();
 
                         break;
                     }
 
                     // None of the above, some middle path node
                     path.push(ancestor);
+                    edge_path.push(ancestor_edge);
                     visited.visit(ancestor);
                     node = ancestor;
                 }
-                // We are done here
-                // break 'outer;
                 
-                if !path.is_empty() {
-                    // Users will probably need to follow the path of the negative cycle
-                    // so it should be in the reverse order than it was found by the algorithm.
+                if !path.is_empty() && !edge_path.is_empty() {
+                    edge_path.reverse();
                     path.reverse();
+
                     paths.push(path);
+                    edge_paths.push(edge_path);
                 }
-                // продолжаем итерации
             }
         }
     }
 
-    if !paths.is_empty() {
-        Some(paths)
+    if !paths.is_empty() && !edge_paths.is_empty() {
+        Some((paths, edge_paths))
     } else {
         None
     }

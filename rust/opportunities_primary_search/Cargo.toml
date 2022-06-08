@@ -1,8 +1,11 @@
 [package]
-name = "opportunities_primary_search"
+name = "graph_search"
 version = "0.1.0"
 authors = ["polyfooly <poolyfooly@protonmail.com>"]
 edition = "2021"
+
+[profile.release]
+opt-level = 3
 
 [dependencies]
 # tokio runtime and utilities
@@ -12,7 +15,8 @@ futures-util = "0.3.21"
 bytes = "1.1.0"
 
 # communication with kafka
-kafka = "0.9.0"
+# kafka = "0.9.0"
+rdkafka = "0.28.0"
 
 # graph search
 petgraph = "0.6.2"
