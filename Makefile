@@ -14,10 +14,10 @@ data_services_down:
 ###
 
 services_up:
-	docker-compose -f docker-compose.services.yml up -d
+	docker-compose -f docker-compose.data-only.yml -f docker-compose.services.yml up -d
 
 services_down:
-	docker-compose -f docker-compose.services.yml down
+	docker-compose -f docker-compose.data-only.yml -f docker-compose.services.yml down
 
 ###
 
