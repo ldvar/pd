@@ -22,12 +22,14 @@
   },
   "dependencies": {
     "@nestjs/common": "^8.0.0",
+    "@nestjs/config": "^2.1.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/microservices": "^8.4.6",
     "@nestjs/platform-express": "^8.0.0",
     "cache-manager": "^4.0.1",
     "coinmarketcap-api": "^3.1.1",
     "kafkajs": "^2.0.2",
+    "nestjs-ethers": "^1.0.2",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0"
@@ -76,7 +78,7 @@
       "<rootDir>/libs/"
     ],
     "moduleNameMapper": {
-      "^arb/meta(|/.*)$": "<rootDir>/libs/meta/src/$1"
+      "^\\@positivedelta/meta(|/.*)$": "<rootDir>/libs/meta/src/$1"
     }
   }
 }

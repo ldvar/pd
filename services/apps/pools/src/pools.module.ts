@@ -1,12 +1,13 @@
-import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { CacheModule, Module } from '@nestjs/common';
+//import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PoolsController } from './pools.controller';
 import { PoolsService } from './pools.service';
-//import TokenService from './services/token.service';
+import { TokenService } from './services/token.service';
+import { MetaModule } from 'arb/meta';
 
 @Module({
   imports: [ 
-    ClientsModule.register([{
+    /*ClientsModule.register([{
     name: "POOLS_SERVICE",
     transport: Transport.KAFKA,
     options: {
@@ -17,18 +18,19 @@ import { PoolsService } from './pools.service';
       consumer: {
         groupId: 'pools-consumer'
       }
-    }},])
-    //CacheModule.register({
-    //  ttl: 60 * 60 * 24,
-    //  isGlobal: true,
-    //}),
+    }},]),*/
+    CacheModule.register({
+      ttl: 60 * 60 * 24,
+      isGlobal: true,
+    }),
+    MetaModule,
   ],
   controllers: [
-    PoolsController
+    PoolsController,
   ],
   providers: [
-    PoolsService
-    //TokenService,
+    PoolsService,
+    TokenService,
   ],
 })
 

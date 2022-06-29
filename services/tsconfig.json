@@ -18,10 +18,10 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "arb/meta": [
+      "@positivedelta/meta": [
         "libs/meta/src"
       ],
-      "arb/meta/*": [
+      "@positivedelta/meta/*": [
         "libs/meta/src/*"
       ]
     }

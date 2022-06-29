@@ -1,13 +1,18 @@
-import { Controller } from '@nestjs/common';
-import { MessagePattern } from '@nestjs/microservices';
+import { Controller, Inject } from '@nestjs/common';
+import { MessagePattern, ClientKafka } from '@nestjs/microservices';
+import { Pool } from './models/pool';
 import { PoolsService } from './pools.service';
 
 @Controller()
 export class PoolsController {
-  constructor(private readonly poolsService: PoolsService) {}
 
-  //@MessagePattern()
-  //getHello(): string {
-  //  return this.poolsService.getHello();
-  //}
+  constructor(
+    private readonly poolsService: PoolsService,
+    //@Inject('POOLS_SERVICE') private client: ClientKafka,
+  ) {}
+
+  @MessagePattern("pools.getPoolsForFetch")
+  async getPoolsForFetch(): Promise<Pool[]> {
+    return await this.poolsService.getPoolsForCheck();
+  }
 }
