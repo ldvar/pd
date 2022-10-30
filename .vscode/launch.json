@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "prepare storage",
+            "type": "f5anything",
+            "request": "launch",
+            "command": "sudo make prepare_storage",
+        },
+
+        {
+            "name": "services up",
+            "type": "f5anything",
+            "request": "launch",
+            "command": "sudo make services_up",
+        },
+
+        {
+            "name": "services down",
+            "type": "f5anything",
+            "request": "launch",
+            "command": "sudo make services_down",
+        }
+    ]
+}
