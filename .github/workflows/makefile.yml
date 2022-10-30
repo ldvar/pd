@@ -15,11 +15,10 @@ jobs:
     - uses: actions/checkout@v3
       
     - name: Install dependencies
-      run: sudo apt install make pkg-config docker-compose libssl-dev rustc rust-src
-        
+      run: sudo apt install make pkg-config docker-compose libssl-dev rustc rust-src       
       
-    - name: ps
+    - name: make storage
       run: sudo make prepare_storage
       
-    - name: c
-      run: sudo make data_services_up
+    - name: build everything
+      run: sudo make services_up
