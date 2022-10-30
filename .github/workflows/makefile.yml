@@ -1,0 +1,25 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "dev0" ]
+  pull_request:
+    branches: [ "dev0" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      
+    - name: Install dependencies
+      run: sudo apt install make pkg-config docker-compose libssl-dev rustc rust-src
+        
+      
+    - name: ps
+      run: sudo make prepare_storage
+      
+    - name: c
+      run: sudo make data_services_up
