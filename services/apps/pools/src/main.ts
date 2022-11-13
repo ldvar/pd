@@ -1,3 +1,4 @@
+
 import { NestFactory } from '@nestjs/core';
 import { PoolsModule } from './pools.module';
 import { Transport } from '@nestjs/microservices';
@@ -9,6 +10,9 @@ async function bootstrap() {
       client: {
         clientId: "EXTERNAL",
         broker: ["localhost:9092"],
+      },
+      consumer: {
+        groupId: 'pools-consumer'
       },
     }
   });

@@ -42,7 +42,8 @@ export class TokenService {
     tokenInfo = await this.cacheManager.get(tokenSymbol);
 
     const address = tokenInfo?.find(
-      (c) => c['platform']['name'].toLowerCase() === chainName.toLowerCase(),
+      (_) => true
+      //(c) => c['platform']['name'].toLowerCase() === chainName.toLowerCase(),
     );
 
     if (address) {
