@@ -10,12 +10,16 @@ mod task;
 use futures::future::join_all;
 use structopt::StructOpt;
 use tokio::runtime::Runtime;
+use simple_logger;
 
 use config::Config;
 use task::task;
 
+
 //#[tokio::main]
 fn main() {
+    simple_logger::init().unwrap();
+
     let config = Config::from_args();
 
     Runtime::new().unwrap().block_on(async {

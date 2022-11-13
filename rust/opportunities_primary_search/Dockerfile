@@ -15,7 +15,7 @@ RUN cargo build --release
 FROM debian:bullseye-slim
 
 RUN apt-get update \
-    && apt-get upgrade \
+    && apt-get upgrade --assume-yes \
     && rm -rf /var/lib/apt/lists/*
 
 

@@ -1,11 +1,11 @@
 [package]
 name = "graph_search"
-version = "0.1.0"
-authors = ["polyfooly <poolyfooly@protonmail.com>"]
+version = "0.1.1"
+authors = ["polyfooly <vlaso.kirill2011@gmail.com>"]
 edition = "2021"
 
 [profile.release]
-opt-level = 3
+opt-level = 0
 
 [dependencies]
 # tokio runtime and utilities

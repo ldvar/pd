@@ -6,6 +6,8 @@ prerequisites:
 
 **install nest**
 
+**npm i -g @nestjs/cli**
+
 **sudo apt install make pkg-config docker-compose libssl-dev rustc rust-src**
 
 

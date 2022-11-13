@@ -3,7 +3,7 @@ use std::convert::TryFrom;
 use std::error::Error;
 use std::time::Duration;
 
-use log::{error, debug};
+use log::{error, debug, trace};
 
 use futures::StreamExt;
 use rdkafka::Message;
@@ -47,7 +47,9 @@ where F: Fn(PoolsDataPacket) -> Option<(Vec<Vec<usize>>, Vec<Vec<usize>>)>
     let mut msg_stream = consumer.stream();
 
     // iterate over all messages blocking
-    while let Some(msg) = msg_stream.next().await{
+    while let Some(msg) = msg_stream.next().await {
+
+        debug!("message received");
 
         // the message itself can be broken
         match msg {
@@ -80,7 +82,15 @@ where F: Fn(PoolsDataPacket) -> Option<(Vec<Vec<usize>>, Vec<Vec<usize>>)>
                 }
             }
             Err(e)=>{
-                error!("Could not receive and will not process message: {}",e)
+                match e {
+                    rdkafka::error::KafkaError::PartitionEOF(_) => {
+                        trace!("Stream EOF!");
+                    }
+                    _ => {
+                        error!("Could not receive and will not process message: {}", e)
+                    }
+                }
+                
             }
         };
     }

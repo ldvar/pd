@@ -5,7 +5,7 @@ use structopt::StructOpt;
 #[derive(StructOpt, Debug, Clone)]
 #[structopt(name = "graph_search")]
 pub struct Config {
-    #[structopt(short, long, default_value = "127.0.0.1:9092")]
+    #[structopt(short, long, default_value = "localhost:9092")]
     pub kafka_broker: String,
 
     #[structopt(short, long, default_value = "graph_search_group")]
