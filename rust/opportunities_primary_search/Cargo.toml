@@ -9,7 +9,7 @@ opt-level = 0
 
 [dependencies]
 # tokio runtime and utilities
-tokio = { version = "1.19.2", features = ["full"] }
+tokio = { version = "1.20.4", features = ["full"] }
 futures = "0.3.21"
 futures-util = "0.3.21"
 bytes = "1.1.0"
