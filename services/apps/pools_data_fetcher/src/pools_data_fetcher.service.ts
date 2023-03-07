@@ -1,40 +1,61 @@
 
+import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
 
-import { InjectEthersProvider, AlchemyProvider, MATIC_NETWORK } from 'nestjs-ethers';
-import { Contract, Provider } from 'ethers-multicall';
+import { Provider as MulticallProvider } from 'ethers-multicall';
+import {
+  //InjectEthersProvider,
+  POLYGON_NETWORK,
+  EthersContract,
+  getNetworkDefaultProvider
+} from 'nestjs-ethers';
+import {  } from "ethers/types/providers/";
 
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
-import { Pool, PoolType } from 'apps/pools/src/models/pool';
+import { abi } from "@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json"
 
-import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
-import { abi as IUniswapV2PairABI } from '@uniswap/v2-core/build/IUniswapV2Pair.json'
-import { BaseProvider } from '@ethersproject/providers';
-import { ethers } from 'ethers';
+import { PoolMetadata } from 'apps/pools/src/models/pool';
+
+//import { abi as IUniswapV2PairABI } from '@uniswap/v2-core/build/IUniswapV2Pair.json';
+//import { BaseProvider } from '@ethersproject/providers';
 
 
 @Injectable()
 export class PoolsDataFetcherService {
-  multicallProvider: Provider;
-  provider: AlchemyProvider;
+  multicallProvider: MulticallProvider;
+  provider: any;
+
   constructor(
     @Inject(CACHE_MANAGER) private poolsCacheManager: Cache,
-    //@InjectEthersProvider() private readonly provider: AlchemyProvider,
+    @Inject(ConfigService) private configService: ConfigService,
   ) {
-    this.provider = new ethers.providers.AlchemyProvider(MATIC_NETWORK, "");
-    this.multicallProvider = new Provider(this.provider);
-    this.multicallProvider.init();
+    const apiKey = configService.get<string>("MORALIS_API_KEY");
+    Logger.error(apiKey);
+    getNetworkDefaultProvider(POLYGON_NETWORK,
+        { moralis: { apiKey: apiKey, region: "eu-central-1"} })
+        .then( provider => { 
+            this.provider = provider;
+            this.multicallProvider = new MulticallProvider(this.provider); 
+            this.multicallProvider.init();
+        });
+        
   }
 
-  getUniswapV3MulticallPoolContract(pool: Pool) {
-    const contract = new Contract(pool.address, IUniswapV3PoolABI);
-    this.multicallProvider.all([contract])
-  } 
+  async getUniswapV3MulticallPoolContract(pool: PoolMetadata) {
+    
+    const contract = new EthersContract(this.provider).create(pool.address, abi);
+    Logger.error(JSON.stringify(contract));
+    Logger.error("test");
+    
+    //const call = await this.multicallProvider.all();
+    
+  }
 
-  async fetchDataPacket(pools: Pool[]) {
-    pools.map( (pool) => {
-      const contract = this.getMulticallPoolContract(pool);
-      const call = 
-    })
+  async fetchDataPacket(pools: PoolMetadata[]) {
+
+    pools.map((pool) => {
+      //const contract = this.getMulticallPoolContract(pool);
+      const call = null;
+    });
   }
 }

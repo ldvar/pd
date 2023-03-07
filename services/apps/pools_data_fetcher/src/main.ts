@@ -1,7 +1,8 @@
 
 import { NestFactory } from '@nestjs/core';
-import { PoolsDataFetcherModule } from './pools_data_fetcher.module';
 import { Transport } from '@nestjs/microservices';
+
+import { PoolsDataFetcherModule } from './pools_data_fetcher.module';
 
 
 async function bootstrap() {
@@ -9,15 +10,15 @@ async function bootstrap() {
     transport: Transport.KAFKA,
     options: {
       client: {
-        clientId: "EXTERNAL",
-        broker: ["localhost:9092"],
+        clientId: 'EXTERNAL',
+        broker: ['localhost:9092'],
       },
       consumer: {
-        groupId: 'pools-data-fetcher-consumer'
+        groupId: 'pools-data-fetcher-consumer',
       },
-    }
+    },
   });
-  
+
   app.listen();
 }
 
