@@ -9,7 +9,7 @@
     "tsConfigPath": "apps/services/tsconfig.app.json"
   },
   "projects": {
-    "pools": {
+    "pools": { 
       "type": "application",
       "root": "apps/pools",
       "entryFile": "main",

@@ -1,8 +1,6 @@
 
 import { Module, Global } from '@nestjs/common';
-import { ConfigModule} from "@nestjs/config"
-
-import { EthersModule, MATIC_NETWORK } from 'nestjs-ethers';
+import { ConfigModule } from '@nestjs/config';
 
 import { MetaService } from './meta.service';
 
@@ -11,12 +9,12 @@ import { MetaService } from './meta.service';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: [
-        "../.env"
-      ]
+      envFilePath: ["libs/meta/.env"],
+      isGlobal: true,
+      cache: true,
     }),
   ],
-  providers: [MetaService],
-  exports: [MetaService],
+  providers: [ MetaService ],
+  exports: [ MetaService ],
 })
-export class MetaModule { }
+export class MetaModule {}

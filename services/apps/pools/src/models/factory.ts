@@ -1,8 +1,6 @@
-
-import { PoolType } from "./pool";
-
+import { PoolType } from './pool';
 
 export class Factory {
-    public address: String;
-    public poolType: PoolType;
+  public address: string;
+  public poolType: PoolType;
 }

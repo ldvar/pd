@@ -1,4 +1,1 @@
-
-export class PoolsRawDataPacket {
-    
-}
+export class PoolsRawDataPacket {}

@@ -1,7 +1,10 @@
 
 prepare_storage:
 	mkdir -p storage
-	chown -R 1000:1000 storage
+	sudo chown -R 1000:1000 storage
+
+clear_storage:
+	sudo rm -rf storage
 
 ####
 
@@ -23,3 +26,6 @@ services_down:
 
 start_pools:
 	cd services; yarn build pools; yarn start pools
+
+start_pools_data_fetcher:
+	cd services; yarn build pools_data_fetcher; yarn start pools_data_fetcher

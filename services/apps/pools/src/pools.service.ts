@@ -1,58 +1,72 @@
 
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
-import { FactoryService } from './services/factory.service';
-import { Pool } from './models/pool'
 
+import { ConfigService } from '@nestjs/config';
+
+import { DexGuruService } from './services/dex_guru.service';
+import { PoolMetadata } from './models/pool';
 
 @Injectable()
 export class PoolsService {
   constructor(
     @Inject(CACHE_MANAGER) private poolsCacheManager: Cache,
-    private factoryService: FactoryService,
+    private configService: ConfigService,
+    private dexGuruService: DexGuruService, //private factoryService: FactoryService,
   ) {}
 
-  async getPoolsForCheck(): Promise<Pool[]> {
-    let addresses;
+  async setPoolsCache(pools) {
+    await this.poolsCacheManager.set('pools', pools);
+  }
+
+  async getPoolsCache() : Promise<PoolMetadata[]> {
+    return await this.poolsCacheManager.get('pools');
+  }
+
+  async getPoolsForCheck(): Promise<PoolMetadata[]> {
+    let pools;
 
     // Search cache
-    addresses = await this.getPoolsForCheckFromCache();
+    pools = await this.getPoolsForCheckFromCache();
 
-    if (addresses) {
-      return addresses;
+    if (pools) {
+      return pools;
     }
 
-    addresses = await this.getPoolsForCheckFromFactories();
+    // Get data from API
+    pools = await this.getPoolsForCheckFromAPI();
+    await this.setPoolsCache(pools);
 
-    this.poolsCacheManager.set(
-      "pool_addresses",
-      addresses
-    );
-    
-    return addresses;
+    // Get pools from chain using AMM factories
+    //addresses = await this.getPoolsForCheckFromFactories();
+
+    return pools;
   }
 
-  async getPoolsForCheckFromFactories(): Promise<Pool[]> {
-    let addresses;
-
-    
-
-    return addresses;
+  async getPoolsForCheckFromAPI(): Promise<PoolMetadata[]> {
+    return await this.getPoolsForCheckFromDexGuru();
   }
 
-  async getPoolsForCheckFromCache(): Promise<Pool[]> {
-    let tokenInfo = null;
+  async getPoolsForCheckFromDexGuru(): Promise<PoolMetadata[]> {
+    // get amm names
+    const [amm_names, types_dict] = await this.dexGuruService.getAllAmmNames();
+    // get live amm pools metadata
+    const pools = await this.dexGuruService.getAmmPools(amm_names, types_dict);
 
-    tokenInfo = await this.poolsCacheManager.get("pool_addresses");
+    return pools;
+  }
 
-    const addresses = tokenInfo?.find(
+  /*async getPoolsForCheckFromFactories(): Promise<Pool[]> {
+    return null; //TODO
+  }*/
+
+  async getPoolsForCheckFromCache(): Promise<PoolMetadata[]> {
+    /*const tokenInfo = await this.poolsCacheManager.get("pool_addresses");
+
+    const pools = tokenInfo?.find(
       (c) => c['platform']['name'].toLowerCase() === "polygon", // todo: multichain support
-    );
+    );*/
 
-    if (addresses) {
-      return addresses;
-    }
-
-    return null;
+    return await this.getPoolsCache();
   }
 }

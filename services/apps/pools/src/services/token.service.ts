@@ -3,8 +3,9 @@ import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const CoinMarketCap = require('coinmarketcap-api');
+//const CoinMarketCap = require('coinmarketcap-api');
 //import ApiConnectionException from '../exceptions/api-connection.exception';
+
 
 @Injectable()
 export class TokenService {
@@ -17,7 +18,7 @@ export class TokenService {
       return this.client;
     }
 
-    this.client = new CoinMarketCap(process.env.COINMARKETCAP_API_KEY);
+    //this.client = new CoinMarketCap(process.env.COINMARKETCAP_API_KEY);
 
     return this.client;
   }
@@ -42,7 +43,7 @@ export class TokenService {
     tokenInfo = await this.cacheManager.get(tokenSymbol);
 
     const address = tokenInfo?.find(
-      (_) => true
+      (_) => true,
       //(c) => c['platform']['name'].toLowerCase() === chainName.toLowerCase(),
     );
 

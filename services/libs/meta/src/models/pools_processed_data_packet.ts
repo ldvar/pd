@@ -1,4 +1,1 @@
-
-export class PoolsProcessedDataPacket {
-    
-}
+export class PoolsProcessedDataPacket {}

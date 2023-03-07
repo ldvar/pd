@@ -7,9 +7,9 @@ services:
     #pools-data-fetcher:
     #    image: pd/pools-data-fetcher:${TAG:-latest}
     #    build:
-    #        context: ./services/pool_datastream_fetcher
+    #        context: ./services/apps/pools_data_fetcher
     #        dockerfile: Dockerfile
-        
+    #   
     #    depends_on:
     #        - kafka
     #        - pools

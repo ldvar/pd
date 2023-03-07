@@ -1,7 +1,6 @@
-
 export class Token {
-    public symbol: String;
-    public address: String;
+  public symbol: string;
+  public address: string;
 
-    public id: BigInt;
+  public id: bigint;
 }
