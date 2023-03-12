@@ -14,7 +14,7 @@ import { PoolsDataFetcherController } from './pools_data_fetcher.controller';
 
 import { MetaModule, MetaService } from '@positivedelta/meta';
 
-import { ethersConfig, eventEmitterConfig } from '@positivedelta/meta/utils';
+import { ethersConfig, ethers_chainId, eventEmitterConfig } from '@positivedelta/meta/utils';
 
 @Module({
     imports: [
@@ -46,8 +46,13 @@ import { ethersConfig, eventEmitterConfig } from '@positivedelta/meta/utils';
         EthersModule.forRootAsync({
             imports: [MetaModule],
             inject: [ConfigService],
+            //ethersConfig;
             useFactory: (config: ConfigService) => {
-                return ethersConfig;
+                return {
+                    network: ethers_chainId,
+                    custom: { url: process.env.ALCHEMY_POLYGON_RPC_URL },
+                    useDefaultProvider: false,
+                }
             },
         }),
     ],

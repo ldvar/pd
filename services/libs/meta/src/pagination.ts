@@ -15,15 +15,18 @@ export class PageLoadedEvent {
 
     public get_next_callback: Function;
     public finish_callback: Function;
+    public update_data_callback: Function;
     
     constructor(page: number, data: PoolMetadata[], rest: number,
          get_next_callback: Function,
-         finish_callback: Function) {
+         finish_callback: Function,
+         update_data_callback: Function) {
         this.page = page;
         this.data = data;
         this.rest = rest;
         this.get_next_callback = get_next_callback;
         this.finish_callback = finish_callback;
+        this.update_data_callback = update_data_callback;
     }
 } 
 

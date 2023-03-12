@@ -9,6 +9,16 @@
 	],
 	"settings": {
 		"editor.suggest.snippetsPreventQuickSuggestions": false,
-		"aiXcoder.showTrayIcon": true
+		"launch": {
+
+			"configurations": [],
+			"compounds": []
+		}
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+		
+		]
 	}
 }

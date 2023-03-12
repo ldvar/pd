@@ -38,6 +38,7 @@ services:
       #  target: /var/lib/kafka/data
 
   kafka_ui:
+  
     image: provectuslabs/kafka-ui:latest
     depends_on:
       - kafka

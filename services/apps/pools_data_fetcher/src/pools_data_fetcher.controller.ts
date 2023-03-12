@@ -39,7 +39,7 @@ export class PoolsDataFetcherController {
         await this.client.connect();
 
         await this.getPools();
-        await this.eventEmitter.waitFor(FetchFinishedEvent.pattern, 30000);
+        await this.eventEmitter.waitFor(FetchFinishedEvent.pattern);
         await this.mainLoop();
     }
 
@@ -53,7 +53,7 @@ export class PoolsDataFetcherController {
         this.check_pools = pools;
     }
 
-    async addPools(pools) {
+    addPools(pools) {
         this.check_pools = this.check_pools.concat(pools);
     }
 
@@ -77,8 +77,9 @@ export class PoolsDataFetcherController {
 
         let callback = (page, data, rest) => this.eventEmitter.emit(PageLoadedEvent.pattern, 
             new PageLoadedEvent(page, data, rest,
-                 (p) => this.getPoolsPage(p+1),
-                  _ => { this.publishFinished(); }));
+                p => this.getPoolsPage(p+1),
+                _ => { this.publishFinished(); },
+                d => { this.addPools(d); }) );
         
         await this.getPoolsPageObservable(page).forEach( data => {
             callback(page, data.data, data.rest);
@@ -92,15 +93,16 @@ export class PoolsDataFetcherController {
     async handlePageLoaded(payload: PageLoadedEvent) {
         //Logger.error("listener matched page loaded event");
         //Logger.error(page, data, rest);
-
         Logger.error(JSON.stringify(payload));
 
-        if (payload.data.length == 0 || payload.rest == 0) {
+        payload.update_data_callback(payload.data);
+
+        if (payload.data.length == 0 || payload.rest <= 0) {
             Logger.error("finished fetching pools");
             payload.finish_callback();
         }
         else {
-            Logger.error("trying to get start next page loading");
+            Logger.error("trying to start next page loading");
             payload.get_next_callback(payload.page + 1);
         }
     }
@@ -109,6 +111,7 @@ export class PoolsDataFetcherController {
 
     async mainLoop() {
         const source = interval(2000);
+        
         source.pipe(repeat()).subscribe( async _ => {
         let dataPacket = await this.poolsDataFetcherService.fetchDataPacket(this.check_pools);
 

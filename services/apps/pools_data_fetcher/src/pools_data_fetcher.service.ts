@@ -1,28 +1,25 @@
 
 import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
 
-import { Contract, ContractCall, Provider as MulticallProvider } from 'ethers-multicall';
+import { Contract, ContractCall, Provider as MulticallProvider, setMulticallAddress } from 'ethers-multicall';
 import {
   BINANCE_NETWORK,
   POLYGON_NETWORK,
   InjectEthersProvider,
+
 } from 'nestjs-ethers';
 
 import { ConfigService } from '@nestjs/config';
 
 import { abi as abi_v2 } from "@uniswap/v2-core/build/IUniswapV2Pair.json";
 import { abi as abi_v3 } from "@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json"
-import { BaseProvider, StaticJsonRpcProvider } from '@ethersproject/providers';
+import { BaseProvider, StaticJsonRpcProvider, } from '@ethersproject/providers';
 
 import { PoolMetadata, PoolType } from 'apps/pools/src/models/pool';
 
 import { PoolRawDataPacket, PoolsRawDataPacket } from '@positivedelta/meta/models/pools_raw_data_packet';
 import { chainId } from '@positivedelta/meta/config';
 import { toHex } from '@uniswap/v3-sdk';
-import { FallbackProvider } from 'ethers';
-
-const ethers_chainId = BINANCE_NETWORK;
-//const ethers_chainId = POLYGON_NETWORK;
 
 @Injectable()
 export class PoolsDataFetcherService {
@@ -61,12 +58,14 @@ export class PoolsDataFetcherService {
   }
 
   async fetchDataPacket(pools: PoolMetadata[]): Promise<PoolsRawDataPacket> {
-    let calls: ContractCall[] = pools.filter(pool => pool.type == PoolType.UniswapV2).map((pool) => {
+    let calls: ContractCall[] = pools.filter(pool => pool.type == 0).map((pool) => {
       let contract = this.getMulticallPoolContract(pool);
       
       let call = contract.getReserves();
       return call;
     });
+
+    Logger.error(pools.length);
 
     const calls_result = await this.multicallProvider.all(calls);
     

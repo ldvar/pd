@@ -17,7 +17,7 @@ import { DataPage } from '@positivedelta/meta/models/interactions';
 
 @Controller()
 export class PoolsDataProcessorController {
-  tokens_data: TokensData;
+  tokens_data: TokensData = {};
 
   constructor(
     private eventEmitter: EventEmitter2,
@@ -74,7 +74,8 @@ export class PoolsDataProcessorController {
       let callback = (page, data, rest) => this.eventEmitter.emit(PageLoadedEvent.pattern, 
           new PageLoadedEvent(page, data, rest,
                (p) => this.getTokensPage(p+1),
-                _ => { this.publishFinished(); }));
+                _ => { this.publishFinished(); },
+                d => { this.addTokens(d); } ));
       
       await this.getTokensPageObservable(page).forEach( data => {
           callback(page, data.data, data.rest);
@@ -90,6 +91,8 @@ export class PoolsDataProcessorController {
         //Logger.error(page, data, rest);
 
         Logger.error(JSON.stringify(payload));
+
+        payload.update_data_callback(payload.data);
 
         if (payload.data.length == 0 || payload.rest <= 0) {
             Logger.error("finished fetching tokens");

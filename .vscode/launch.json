@@ -1,29 +1,39 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-    
+        {
+            "name": "pools",
+            "type": "f5anything",
+            "request": "launch",
+            "command": "cd services && yarn start pools",
+        },
+        {
+            "name": "pools_data_fetcher",
+            "type": "f5anything",
+            "request": "launch",
+            "command": "cd services && yarn start pools_data_fetcher",
+        },
+
         {
             "name": "prepare storage",
             "type": "f5anything",
             "request": "launch",
-            "command": "sudo make prepare_storage",
+            "command": "make prepare_storage"
         },
-
         {
             "name": "services up",
             "type": "f5anything",
             "request": "launch",
-            "command": "sudo make services_up",
+            "command": "sudo make services_up"
         },
-
         {
             "name": "services down",
             "type": "f5anything",
             "request": "launch",
-            "command": "sudo make services_down",
-        }
+            "command": "sudo make services_down"
+        },
+
+        
+
     ]
 }

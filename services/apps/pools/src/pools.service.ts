@@ -76,6 +76,7 @@ export class PoolsService {
     );*/
 
     return await this.getPoolsCache();
+    
   }
 
   ////////////////////////////////////////

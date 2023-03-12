@@ -71,7 +71,7 @@ where F: Fn(PoolsDataPacket) -> Option<(Vec<Vec<usize>>, Vec<Vec<usize>>)>
                                         publish_results(&producer, output_topic.clone(), (a,b)).await
                                     },
                                     None => { 
-                                        //debug!("...");
+                                        debug!("...");
                                     }
                                 }
                             }

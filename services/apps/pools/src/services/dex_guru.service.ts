@@ -52,7 +52,7 @@ export class DexGuruService {
     // filter by type
     const needed_raw_amms = raw_amms.filter( ammModel =>
       ammTypes.includes(ammModel.type)
-    );
+    );//.slice(0, Math.floor(raw_amms.length/ 6)); // TODO remove limit
     // get names
     const amm_names = needed_raw_amms.map( ammModel => ammModel.name);
 
