@@ -3,7 +3,7 @@ use std::convert::TryFrom;
 use std::error::Error;
 use std::time::Duration;
 
-use log::{error, debug, trace};
+use log::{error, debug, trace, warn};
 
 use futures::StreamExt;
 use rdkafka::Message;
@@ -49,7 +49,7 @@ where F: Fn(PoolsDataPacket) -> Option<(Vec<Vec<usize>>, Vec<Vec<usize>>)>
     // iterate over all messages blocking
     while let Some(msg) = msg_stream.next().await {
 
-        debug!("message received");
+        //debug!("message received");
 
         // the message itself can be broken
         match msg {
@@ -59,16 +59,20 @@ where F: Fn(PoolsDataPacket) -> Option<(Vec<Vec<usize>>, Vec<Vec<usize>>)>
                 match  msg.payload() {
                     Some(payload) => {
                         let data = PoolsDataPacket::try_from(payload);
-
+                        
                         // only process valid messages
                         match data {
                             Ok(data_packet) => {
                                 let results = handler(data_packet);
                                 match results {
                                     Some(found_paths) => {
-                                        publish_results(&producer, output_topic.clone(), found_paths).await
+                                        let (a, b) = found_paths;
+                                        warn!("{} OPPORTUNITIES FOUND", a.len());
+                                        publish_results(&producer, output_topic.clone(), (a,b)).await
                                     },
-                                    None => {}
+                                    None => { 
+                                        //debug!("...");
+                                    }
                                 }
                             }
                             Err(e) => {

@@ -18,7 +18,7 @@ use task::task;
 
 //#[tokio::main]
 fn main() {
-    simple_logger::init().unwrap();
+    simple_logger::init_with_level(log::Level::Debug).unwrap();
 
     let config = Config::from_args();
 
