@@ -1,11 +1,17 @@
 
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable, Logger} from '@nestjs/common';
 import { Cache } from 'cache-manager';
 
 import { ConfigService } from '@nestjs/config';
 
-import { DexGuruService } from './services/dex_guru.service';
+import { Token } from '@uniswap/sdk';
+
 import { PoolMetadata } from './models/pool';
+import { TokenMetadata } from './models/token';
+
+import { DexGuruService } from './services/dex_guru.service';
+import { TokensData } from "./models/token";
+
 
 @Injectable()
 export class PoolsService {
@@ -15,12 +21,14 @@ export class PoolsService {
     private dexGuruService: DexGuruService, //private factoryService: FactoryService,
   ) {}
 
+  //////////////////////////////////
+
   async setPoolsCache(pools) {
-    await this.poolsCacheManager.set('pools', pools);
+    await this.poolsCacheManager.set("pools", pools);
   }
 
-  async getPoolsCache() : Promise<PoolMetadata[]> {
-    return await this.poolsCacheManager.get('pools');
+  async getPoolsCache(): Promise<PoolMetadata[]> {
+    return await this.poolsCacheManager.get("pools");
   }
 
   async getPoolsForCheck(): Promise<PoolMetadata[]> {
@@ -68,5 +76,48 @@ export class PoolsService {
     );*/
 
     return await this.getPoolsCache();
+  }
+
+  ////////////////////////////////////////
+
+  async getTokensDataFromCache(): Promise<TokensData> {
+    return await this.poolsCacheManager.get('tokens');
+  }
+
+  async setTokensDataCache(tokens_data) {
+    await this.poolsCacheManager.set('tokens', tokens_data);  
+  }
+
+  async getTokensData(): Promise<TokensData> {
+    let tokens_data;
+
+    // Search cache
+    tokens_data = await this.getTokensDataFromCache();
+
+    if (tokens_data) {
+      return tokens_data;
+    }
+
+    // Get data from API
+    let addresses = await this.getNeededTokensAddresses();
+
+    tokens_data = await this.dexGuruService.getTokensData(addresses);
+    await this.setTokensDataCache(tokens_data);
+
+    return tokens_data;
+  }
+
+  //////////////////////////////////////
+
+  async getNeededTokensAddresses() {
+    const pools = await this.getPoolsForCheck();
+
+    let addresses = pools.reduce( (s: string[], e) => {
+      return s.concat([ e.token0_address, e.token1_address ]);
+    }, []).reduce( (s, e) => {
+      return s.includes(e) ? s : s.concat([e]);
+    }, []);
+
+    return addresses;
   }
 }

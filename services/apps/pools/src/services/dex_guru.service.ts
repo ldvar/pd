@@ -3,10 +3,12 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 
 import DexGuru, { AmmChoices, ChainChoices } from 'dexguru-sdk';
 
-import { chainId, ammTypes } from '@positivedelta/meta/config';
+import { chainId, ammTypes, token_symbols } from '@positivedelta/meta/config';
 import { ConfigService } from '@nestjs/config';
 
-import { PoolMetadata } from '../models/pool';
+import { PoolMetadata, PoolType } from '../models/pool';
+import { Pool } from '@uniswap/v3-sdk';
+import { TokenMetadata } from '../models/token';
 
 
 @Injectable()
@@ -16,8 +18,6 @@ export class DexGuruService {
 
   constructor(@Inject(ConfigService) private configService: ConfigService) {
     const api_key = configService.get<string>("DEX_GURU_API_KEY");
-    Logger.error(JSON.stringify(api_key));
-    Logger.error(JSON.stringify(configService));
     this.sdk = new DexGuru(
       api_key,
       'https://api.dev.dex.guru',
@@ -38,8 +38,9 @@ export class DexGuruService {
 
       offset += temp_length;
       Logger.error(raw_result.length);
+      Logger.error(temp_result.total);
 
-      if (offset >= temp_result.total || temp_length == 0) break;
+      if ((offset >= temp_result.total) || temp_length == 0) break;
     }
 
     return raw_result;
@@ -47,29 +48,22 @@ export class DexGuruService {
 
   async getAllAmmNames(): Promise<[string[], { [name: string]: string }]> {
     const raw_amms = (await this.sdk.getAllAmmInventory(this.dexGuruChainId)).data;
-    //await this.recursiveRequest(
-    //  this.sdk.getAllAmmInventory,
-    //  this.dexGuruChainId,
-    //);
 
     // filter by type
-    const needed_raw_amms = raw_amms.filter((ammModel) =>
-      ammTypes.includes(ammModel.type),
+    const needed_raw_amms = raw_amms.filter( ammModel =>
+      ammTypes.includes(ammModel.type)
     );
     // get names
-    const amm_names = needed_raw_amms.map((ammModel) => ammModel.name);
+    const amm_names = needed_raw_amms.map( ammModel => ammModel.name);
 
     let types_dict = {};
-    for (const ammType in ammTypes) {
-      types_dict = {
-        ...types_dict,
-        ammType: needed_raw_amms
+    ammTypes.forEach( ammType => {
+      types_dict[ammType] = needed_raw_amms
           .filter((amm) => ammType === amm.type)
-          .map((amm) => amm.name),
-      };
-    }
+          .map((amm) => amm.name);
+    });
 
-    //Logger.debug('Total AMMs: ', dg_pools.total);
+    Logger.error(raw_amms);
 
     return [amm_names, types_dict];
   }
@@ -98,13 +92,34 @@ export class DexGuruService {
       )
       .map((amm_mint) => {
         return {
-          type: typesDict[amm_mint.amm],
+          type: (amm_mint.amm) == "uniswap_v3" ? PoolType.UniswapV3 : PoolType.UniswapV2,
           address: amm_mint.pair_address,
           token0_address: amm_mint.tokens_in[0].address,
           token1_address: amm_mint.tokens_in[1].address,
-        };
+        } as PoolMetadata;
       });
 
-    return pools.map((pool) => Object.create(PoolMetadata.prototype, pool));
+    return pools;
+  }
+
+  async getTokensData(addresses): Promise<{ [name: string]: TokenMetadata }> {
+    let tokens_data = {};
+
+    for ( let i in addresses ) {
+      let token = new TokenMetadata();
+
+      try {
+        let data = await this.sdk.getTokenInventoryByAddress(this.dexGuruChainId, addresses[i]);
+
+        token.address = data.address;
+        token.symbol = data.symbol;
+        token.decimals = data.decimals;
+
+        // use address as a key
+        tokens_data[token.address] = token;
+      } catch { continue; }
+    }
+    
+    return tokens_data;
   }
 }

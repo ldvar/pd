@@ -3,6 +3,9 @@ version: '3'
 services:
     #pools:
     #    image: pd/pools:${TAG:-latest}
+    #    build:
+    #        context: ./services/apps/pool
+    #        dockerfile: Dockerfile
 
     #pools-data-fetcher:
     #    image: pd/pools-data-fetcher:${TAG:-latest}

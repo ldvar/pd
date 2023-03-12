@@ -1,6 +1,11 @@
-export class Token {
+
+export class TokenMetadata {
   public symbol: string;
   public address: string;
 
-  public id: bigint;
+  public decimals: number;
+
+  public id?: number;
 }
+
+export type TokensData = { [address: string]: TokenMetadata };

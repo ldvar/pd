@@ -36,7 +36,6 @@ services:
       #- type: bind
       #  source: ./storage/kafka/data
       #  target: /var/lib/kafka/data
-      
 
   kafka_ui:
     image: provectuslabs/kafka-ui:latest
@@ -48,7 +47,17 @@ services:
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+
+  redis:
+    image: bitnami/redis:latest
+    volumes:
+      - redis_data:/bitnami/redis/data
+    ports: 
+      - 6379:6379 
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
       
 volumes:
+  redis_data:
   zookeeper_data:
   kafka_data:
