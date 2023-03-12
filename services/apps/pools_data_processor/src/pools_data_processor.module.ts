@@ -1,30 +1,42 @@
-import { Module } from '@nestjs/common';
+
+import { Module, CacheModule } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 import { PoolsDataProcessorController } from './pools_data_processor.controller';
 import { PoolsDataProcessorService } from './pools_data_processor.service';
 
+import { ethers_chainId, eventEmitterConfig } from '@positivedelta/meta/utils';
+
 @Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: 'POOLS_DATA_PROCESSOR_SERVICE',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            clientId: 'EXTERNAL',
-            brokers: ['localhost:9092'],
-          },
-          consumer: {
-            groupId: 'pools-data-processor-consumer',
-          },
+    imports: [
+        EventEmitterModule.forRoot(eventEmitterConfig),
+        
+        ClientsModule.register([
+        {
+            name: 'POOLS_DATA_PROCESSOR_SERVICE',
+            transport: Transport.KAFKA,
+            options: {
+                client: {
+                    clientId: 'EXTERNAL',
+                    brokers: ['localhost:9092'],
+                },
+                consumer: {
+                    groupId: 'pools-data-processor-consumer',
+                },
+            },
         },
-      },
-    ]),
-  ],
+        ]),
 
-  controllers: [PoolsDataProcessorController],
+        CacheModule.register({
+            ttl: 60 * 60 * 24 * 1000,
+            isGlobal: true,
+        }),
+    ],
 
-  providers: [PoolsDataProcessorService],
-})
-export class PoolsDataProcessorModule {}
+    controllers: [ PoolsDataProcessorController ],
+
+    providers: [ PoolsDataProcessorService ],
+
+}) export class PoolsDataProcessorModule {}
