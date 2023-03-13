@@ -46,7 +46,6 @@ export class PoolsDataProcessorService {
             this.token_sdk_objects[address] = token_obj;
 
             this.token_index[i] = token_data.address;
-
             i++; //!!!
         }
     }
@@ -60,7 +59,7 @@ export class PoolsDataProcessorService {
     }
 
     calculateSwapWeight(p: PoolRawDataPacket): number {
-        const fee_k = 1.0; //- (p.fee / 1.0e6);
+        const fee_k = 1.0 - (p.fee / 1.0e6); // UniswapV2 = TODO implement multiple dex types + fee handling
 
         const r0 = this.calculateAmount(p.token0_address, p.token0_reserve);
         const r1 = this.calculateAmount(p.token1_address, p.token1_reserve);
@@ -103,6 +102,7 @@ export class PoolsDataProcessorService {
             res.token0_reserve = pool.token1_reserve;
             res.token1_address = pool.token0_address;
             res.token1_reserve = pool.token0_reserve;
+
             return res;
         })
     }
@@ -118,7 +118,10 @@ export class PoolsDataProcessorService {
 
         //data_packet.pools_data = data_packet.pools_data.concat(this.inversePoolsDataCopy(data_packet_one_way.pools_data));
 
-        let pool_id_add_value = this.pool_id_last + 1;
+        let pool_id_add_value = 110000;
+        Logger.error(pool_id_add_value);
+        Logger.error(this.tokens_data);
+        Logger.error(this.pool_index);
 
         let transform = (inverse: boolean) => pool_data => {
             let res = new PoolProcessedDataPacket();

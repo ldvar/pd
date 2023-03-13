@@ -75,6 +75,9 @@ where
                 let mut path = Vec::<G::NodeId>::new();
                 let mut edge_path = Vec::<G::EdgeId>::new();
 
+                path.push(start);
+                //edge_path.push(edge.id());
+
                 // Go backward in the predecessor chain
                 loop {
                     let ancestor;
@@ -93,17 +96,23 @@ where
                     // 1. start is reached
                     if ancestor == start {
                         path.push(ancestor);
+                        edge_path.push(ancestor_edge);
                         break;
                     }
+
                     // 2. some node was reached twice
                     else if visited.is_visited(&ancestor) {
+                        path.push(ancestor);
+                        edge_path.push(ancestor_edge);
+                        
                         // Drop any node in path that is before the first ancestor
                         let pos = path
                             .iter()
                             .position(|&p| p == ancestor)
                             .expect("we should always have a position");
+
                         path = path[pos..path.len()].to_vec();
-                        edge_path = edge_path[pos..path.len()].to_vec();
+                        edge_path = edge_path[pos..edge_path.len()].to_vec();
 
                         break;
                     }
@@ -113,6 +122,7 @@ where
                     edge_path.push(ancestor_edge);
                     visited.visit(ancestor);
                     node = ancestor;
+                    
                 }
                 
                 if !path.is_empty() && !edge_path.is_empty() {

@@ -10,14 +10,14 @@ export class PageLoadedEvent {
     static pattern: string = pools_fetch_events.page_loaded;
 
     public page: number;
-    public data: PoolMetadata[];
+    public data: any;
     public rest: number;
 
     public get_next_callback: Function;
     public finish_callback: Function;
     public update_data_callback: Function;
     
-    constructor(page: number, data: PoolMetadata[], rest: number,
+    constructor(page: number, data: any, rest: number,
          get_next_callback: Function,
          finish_callback: Function,
          update_data_callback: Function) {

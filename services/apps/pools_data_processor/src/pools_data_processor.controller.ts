@@ -32,9 +32,9 @@ export class PoolsDataProcessorController {
       await this.client.connect();
       
       await this.getTokens();
-      await this.eventEmitter.waitFor(FetchFinishedEvent.pattern, 30000);
+      await this.eventEmitter.waitFor(FetchFinishedEvent.pattern);
         
-      this.poolsDataProcessorService.updateTokensData(this.tokens_data)
+      this.poolsDataProcessorService.updateTokensData(this.tokens_data);
     }
     
     async initListeners() {
@@ -48,7 +48,7 @@ export class PoolsDataProcessorController {
       this.tokens_data = tokens;
     }
     
-    async addTokens(tokens) {
+    addTokens(tokens) {
       this.tokens_data = { ...this.tokens_data, ...tokens};
       Logger.error("test dict contatenation", this.tokens_data);
     }
@@ -115,5 +115,6 @@ export class PoolsDataProcessorController {
       let processed_packet = this.poolsDataProcessorService.processRawDataPacket(data_packet);
       this.client.emit(patterns.pools_processed_data, JSON.stringify(processed_packet));
     }
+
   }
   

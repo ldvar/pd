@@ -41,6 +41,7 @@ export class DexGuruService {
       Logger.error(temp_result.total);
 
       if ((offset >= temp_result.total) || temp_length == 0) break;
+
     }
 
     return raw_result;
@@ -52,7 +53,7 @@ export class DexGuruService {
     // filter by type
     const needed_raw_amms = raw_amms.filter( ammModel =>
       ammTypes.includes(ammModel.type)
-    );//.slice(0, Math.floor(raw_amms.length/ 6)); // TODO remove limit
+    );
     // get names
     const amm_names = needed_raw_amms.map( ammModel => ammModel.name);
 
@@ -63,7 +64,7 @@ export class DexGuruService {
           .map((amm) => amm.name);
     });
 
-    Logger.error(raw_amms);
+    Logger.error(needed_raw_amms);
 
     return [amm_names, types_dict];
   }
@@ -75,21 +76,28 @@ export class DexGuruService {
         this.sdk.getAmmsMints,
         this.dexGuruChainId,
         ammChoices,
-      ),
+      );/*,
       amm_burns = await this.recursiveRequest(
         this.sdk.getAmmsBurns,
         this.dexGuruChainId,
         ammChoices,
-      );
+      );)
 
     const burned_amm_addresses = amm_burns.map(
       (amm_burn) => amm_burn.pair_address,
-    );
+    );*/
+
 
     const pools = amm_mints
-      .filter(
+      .reduce((acc, amm_mint) => {
+          return acc.keys.includes(amm_mint.pair_address) ?
+           acc : 
+              { keys: acc.keys.concat([amm_mint.pair_address]),
+                values: acc.values.concat([amm_mint]) };
+      }, { keys: [], values: [] }).values
+      /*.filter(
         (amm_mint) => !burned_amm_addresses.includes(amm_mint.pair_address),
-      )
+      )*/
       .map((amm_mint) => {
         return {
           type: (amm_mint.amm) == "uniswap_v3" ? PoolType.UniswapV3 : PoolType.UniswapV2,
@@ -98,6 +106,8 @@ export class DexGuruService {
           token1_address: amm_mint.tokens_in[1].address,
         } as PoolMetadata;
       });
+
+      Logger.error(pools.length);
 
     return pools;
   }

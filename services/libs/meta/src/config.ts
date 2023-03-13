@@ -46,7 +46,7 @@ export const factories = {
 
 export const chainId = 137; //56; // bsc //137; // polygon
 
-export const ammTypes = [ "uniswap_v2" ]; //, 'uniswap_v3' ];
+export const ammTypes = [ "uniswap_v2" ];//, 'uniswap_v3' ];
 
 // event and message patterns
 export const patterns = {
