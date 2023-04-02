@@ -44,7 +44,7 @@ export const factories = {
   UniswapV2: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
 };
 
-export const chainId = 137; //56; // bsc //137; // polygon
+export const chainId = 42161; //56; // bsc //137; // polygon
 
 export const ammTypes = [ "uniswap_v2" ];//, 'uniswap_v3' ];
 

@@ -77,7 +77,7 @@ export class PoolsDataFetcherController {
 
         let callback = (page, data, rest) => this.eventEmitter.emit(PageLoadedEvent.pattern, 
             new PageLoadedEvent(page, data, rest,
-                p => this.getPoolsPage(p+1),
+                p => { this.getPoolsPage(p+1); } ,
                 _ => { this.publishFinished(); },
                 d => { this.addPools(d); }) );
         
@@ -93,7 +93,7 @@ export class PoolsDataFetcherController {
     async handlePageLoaded(payload: PageLoadedEvent) {
         //Logger.error("listener matched page loaded event");
         //Logger.error(page, data, rest);
-        Logger.error(JSON.stringify(payload));
+        //Logger.error(JSON.stringify(payload));
 
         payload.update_data_callback(payload.data);
 

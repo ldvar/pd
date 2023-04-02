@@ -19,7 +19,10 @@ export class PoolsService {
     @Inject(CACHE_MANAGER) private poolsCacheManager: Cache,
     private configService: ConfigService,
     private dexGuruService: DexGuruService, //private factoryService: FactoryService,
-  ) {}
+  ) {
+
+    //this.setTokensDataCache({});
+  }
 
   //////////////////////////////////
 
@@ -113,7 +116,7 @@ export class PoolsService {
   async getNeededTokensAddresses() {
     const pools = await this.getPoolsForCheck();
 
-    let addresses = pools.reduce( (s: string[], e) => {
+    let addresses: string[] = pools.reduce( (s: string[], e) => {
       return s.concat([ e.token0_address, e.token1_address ]);
     }, []).reduce( (s, e) => {
       return s.includes(e) ? s : s.concat([e]);

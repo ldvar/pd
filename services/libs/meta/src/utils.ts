@@ -1,7 +1,7 @@
 
 
 
-import { BINANCE_NETWORK, POLYGON_NETWORK } from 'nestjs-ethers';
+import { BINANCE_NETWORK, POLYGON_NETWORK, ARBITRUM_NETWORK } from 'nestjs-ethers';
 
 import { chainId } from './config';
 
@@ -12,8 +12,8 @@ export const ethers_chainId = ( () => {
             return BINANCE_NETWORK;
         case "137":
             return POLYGON_NETWORK;
-        default:
-            return POLYGON_NETWORK;
+        case "42161":
+            return ARBITRUM_NETWORK;
     };
 } )()
 

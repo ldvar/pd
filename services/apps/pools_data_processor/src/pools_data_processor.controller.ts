@@ -21,7 +21,7 @@ export class PoolsDataProcessorController {
 
   constructor(
     private eventEmitter: EventEmitter2,
-    private readonly poolsDataProcessorService: PoolsDataProcessorService,
+    private poolsDataProcessorService: PoolsDataProcessorService,
     @Inject('POOLS_DATA_PROCESSOR_SERVICE') private client: ClientKafka,
     ) {}
     
@@ -50,7 +50,7 @@ export class PoolsDataProcessorController {
     
     addTokens(tokens) {
       this.tokens_data = { ...this.tokens_data, ...tokens};
-      Logger.error("test dict contatenation", this.tokens_data);
+      //Logger.error("test dict contatenation", this.tokens_data);
     }
     
     async getTokens() {
@@ -62,7 +62,7 @@ export class PoolsDataProcessorController {
 
     getTokensPageObservable(page: number): Observable<DataPage<TokensData>> {
       return this.client.send(patterns.get_tokens, { page: page });
-  }
+    }
 
     publishFinished() {
         this.eventEmitter.emit(FetchFinishedEvent.pattern, new FetchFinishedEvent());
@@ -73,7 +73,7 @@ export class PoolsDataProcessorController {
 
       let callback = (page, data, rest) => this.eventEmitter.emit(PageLoadedEvent.pattern, 
           new PageLoadedEvent(page, data, rest,
-               (p) => this.getTokensPage(p+1),
+               (p) => { this.getTokensPage(p+1); } ,
                 _ => { this.publishFinished(); },
                 d => { this.addTokens(d); } ));
       
@@ -90,17 +90,17 @@ export class PoolsDataProcessorController {
         //Logger.error("listener matched page loaded event");
         //Logger.error(page, data, rest);
 
-        Logger.error(JSON.stringify(payload));
+        //Logger.error(JSON.stringify(payload));
 
-        payload.update_data_callback(payload.data);
+        await payload.update_data_callback(payload.data);
 
         if (payload.data.length == 0 || payload.rest <= 0) {
             Logger.error("finished fetching tokens");
-            payload.finish_callback();
+            await payload.finish_callback();
         }
         else {
             Logger.error("trying to get start next page loading");
-            payload.get_next_callback(payload.page + 1);
+            await payload.get_next_callback(payload.page + 1);
         }
     }
     

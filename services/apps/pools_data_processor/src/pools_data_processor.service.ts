@@ -6,21 +6,21 @@ import { Cache } from 'cache-manager';
 import { PoolRawDataPacket, PoolsRawDataPacket } from '@positivedelta/meta/models/pools_raw_data_packet';
 import { PoolProcessedDataPacket, PoolsProcessedDataPacket } from '@positivedelta/meta/models/pools_processed_data_packet';
 import { TokenMetadata } from 'apps/pools/src/models/token';
-import { ChainId, Token, TokenAmount } from '@uniswap/sdk';
+import { BigintIsh, ChainId, Token, TokenAmount } from '@uniswap/sdk';
 import { chainId } from '@positivedelta/meta/config';
 import { PoolMetadata } from 'apps/pools/src/models/pool';
 
 
 @Injectable()
 export class PoolsDataProcessorService {
-    tokens_data: { [address: string]: TokenMetadata };
-    token_sdk_objects: { [address: string]: Token };
+    public tokens_data: { [address: string]: TokenMetadata };
+    public token_sdk_objects: { [address: string]: Token };
 
-    token_index: { [id: string]: string };
+    public token_index: { [id: string]: string };
 
-    pool_index: { [address: string]: PoolMetadata };
-    pool_reverse_index: { [id: number]: string };
-    pool_id_last: number;
+    public pool_index: { [address: string]: PoolMetadata };
+    public pool_reverse_index: { [id: number]: string };
+    public pool_id_last: number;
     
     constructor(
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -32,14 +32,14 @@ export class PoolsDataProcessorService {
 
     ///
 
-    updateTokensData(tokens_data: { [address: string]: TokenMetadata }) {
+    updateTokensData(tokens_data) {
         this.tokens_data = tokens_data;
         this.token_sdk_objects = {};
         this.token_index = {};
 
         let i = 0;
-        for ( let address in tokens_data ) {
-            let token_data = tokens_data[address];
+        for ( let address in this.tokens_data ) {
+            let token_data = this.tokens_data[address];
             token_data.id = i;
 
             let token_obj = new Token(chainId as ChainId, address, token_data.decimals, token_data.symbol);
@@ -52,8 +52,13 @@ export class PoolsDataProcessorService {
 
     /// swap calculations
 
-    calculateAmount(token_address, amount): number {
-        const token_amount = new TokenAmount(this.token_sdk_objects[token_address], amount);
+    calculateAmount(token_address: string, amount: BigintIsh): number {
+        let token_amount;
+        try {
+        token_amount = new TokenAmount(this.token_sdk_objects[token_address], amount);
+        } catch (e) { 
+            return 0.0;
+        }
         const amount_str = token_amount.toExact();
         return parseFloat(amount_str);
     }
@@ -63,6 +68,10 @@ export class PoolsDataProcessorService {
 
         const r0 = this.calculateAmount(p.token0_address, p.token0_reserve);
         const r1 = this.calculateAmount(p.token1_address, p.token1_reserve);
+
+        if (r0 === 0.0 || r1 === 0.0) {
+            return 0.0;
+        }
 
         const q = r1 / r0;
 
@@ -119,11 +128,11 @@ export class PoolsDataProcessorService {
         //data_packet.pools_data = data_packet.pools_data.concat(this.inversePoolsDataCopy(data_packet_one_way.pools_data));
 
         let pool_id_add_value = 110000;
-        Logger.error(pool_id_add_value);
-        Logger.error(this.tokens_data);
-        Logger.error(this.pool_index);
+        //Logger.error(pool_id_add_value);
+        //Logger.error(this.tokens_data);
+        //Logger.error(this.pool_index);
 
-        let transform = (inverse: boolean) => pool_data => {
+        let transform = (inverse: boolean) => { return (pool_data: PoolRawDataPacket) => {
             let res = new PoolProcessedDataPacket();
             res.id = this.pool_index[pool_data.address].id + (inverse ? pool_id_add_value : 0);
             res.weight = this.calculateSwapWeight(pool_data); 
@@ -131,15 +140,15 @@ export class PoolsDataProcessorService {
             res.token1_id = this.tokens_data[pool_data.token1_address].id;
 
             return res;
-        }
+        }};
 
-        const pools_data_processed = data_packet.pools_data
+        let pools_data_processed = data_packet.pools_data
             .map(transform(false))
             .concat(data_packet_second_way.map(transform(true)))
             .reduce((acc: PoolProcessedDataPacket[], pool_data: PoolProcessedDataPacket) => { 
                 let ids = acc.map(pool => pool.id);
                 return (ids.includes(pool_data.id) ? acc : acc.concat([pool_data]));
-             }, [])
+             }, []);
 
         let result = new PoolsProcessedDataPacket();
         result.pools_data = pools_data_processed;

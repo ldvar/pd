@@ -7,7 +7,6 @@ import { chainId, ammTypes, token_symbols } from '@positivedelta/meta/config';
 import { ConfigService } from '@nestjs/config';
 
 import { PoolMetadata, PoolType } from '../models/pool';
-import { Pool } from '@uniswap/v3-sdk';
 import { TokenMetadata } from '../models/token';
 
 
@@ -30,18 +29,27 @@ export class DexGuruService {
     // api pagination limit
     const limit = 100;
     let offset = 0;
+    let temp_length = 0;
+    let temp_result;
 
     while (true) {
-      let temp_result = await sdk_fn(...args, undefined, undefined, undefined, limit, offset);
-      let temp_length = temp_result.data.length;
-      raw_result = raw_result.concat(temp_result.data);
+      let done = true;
+      try {
+        temp_result = await sdk_fn(...args, undefined, undefined, undefined, limit, offset);
+        temp_length = temp_result.data.length;
+        raw_result = raw_result.concat(temp_result.data);
+
+      } catch (e) {
+        done = false;
+      }
+
+      if (!done) continue;
 
       offset += temp_length;
       Logger.error(raw_result.length);
       Logger.error(temp_result.total);
 
       if ((offset >= temp_result.total) || temp_length == 0) break;
-
     }
 
     return raw_result;
@@ -115,7 +123,7 @@ export class DexGuruService {
   async getTokensData(addresses): Promise<{ [name: string]: TokenMetadata }> {
     let tokens_data = {};
 
-    for ( let i in addresses ) {
+    for ( let i = 0; i < addresses.length; ) {
       let token = new TokenMetadata();
 
       try {
@@ -127,7 +135,11 @@ export class DexGuruService {
 
         // use address as a key
         tokens_data[token.address] = token;
-      } catch { continue; }
+      } catch (e) { 
+        Logger.error(e);
+        continue; 
+      }
+      i++;
     }
     
     return tokens_data;
