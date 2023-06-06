@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  pools: # docker service running in .services directory using 'yarn start pools' command
+    image: pd/pools:${TAG:-latest}
+    build:
+      context: ./../services
+      args:
+        DOCKER_BUILDKIT: 1
+      dockerfile: ./../dockerize/pools.Dockerfile
+
+ # pools_data_fetcher:
+  #  image: pd/pools_data_fetcher:${TAG:-latest}
+   # build:
+    #  context: ./services
+     # #target: yarn start pools_data_fetcher
+      #command: yarn start pools_data_fetcher

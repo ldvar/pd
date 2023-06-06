@@ -8,17 +8,6 @@
 		}
 	],
 	"settings": {
-		"editor.suggest.snippetsPreventQuickSuggestions": false,
-		"launch": {
-
-			"configurations": [],
-			"compounds": []
-		}
-	},
-	"launch": {
-		"version": "0.2.0",
-		"configurations": [
 		
-		]
 	}
 }

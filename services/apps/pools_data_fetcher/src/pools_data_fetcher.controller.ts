@@ -91,11 +91,7 @@ export class PoolsDataFetcherController {
 
     @OnEvent(PageLoadedEvent.pattern, {objectify: true, "async": false})
     async handlePageLoaded(payload: PageLoadedEvent) {
-        //Logger.error("listener matched page loaded event");
-        //Logger.error(page, data, rest);
-        //Logger.error(JSON.stringify(payload));
-
-        payload.update_data_callback(payload.data);
+        await payload.update_data_callback(payload.data);
 
         if (payload.data.length == 0 || payload.rest <= 0) {
             Logger.error("finished fetching pools");
@@ -103,19 +99,18 @@ export class PoolsDataFetcherController {
         }
         else {
             Logger.error("trying to start next page loading");
-            payload.get_next_callback(payload.page + 1);
+            payload.get_next_callback(payload.page);
         }
     }
 
     ///
 
     async mainLoop() {
-        const source = interval(2000);
-        
+        const source = interval(5000);
         source.pipe(repeat()).subscribe( async _ => {
-        let dataPacket = await this.poolsDataFetcherService.fetchDataPacket(this.check_pools);
+            let dataPacket = await this.poolsDataFetcherService.fetchDataPacket(this.check_pools);
 
-        this.client.emit(patterns.pools_raw_data, JSON.stringify(dataPacket));
+            this.client.emit(patterns.pools_raw_data, JSON.stringify(dataPacket));
         });
     }
 }

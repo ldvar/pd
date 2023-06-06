@@ -25,7 +25,10 @@
       ],
       "@positivedelta/meta/*": [
         "libs/meta/src/*"
-      ]
+      ],
+      "@positivedelta/apps/*": [
+        "apps/*/src"
+      ],
     }
   }
 }

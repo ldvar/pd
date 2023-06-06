@@ -12,10 +12,10 @@ clear_storage:
 ####
 
 data_services_up:
-	docker-compose -f docker-compose.data-only.yml up -d
+	docker-compose -f docker-compose.data-only.services.yml up -d
 
 data_services_down:
-	docker-compose -f docker-compose.data-only.yml down
+	docker-compose -f docker-compose.data-only.services.yml down
 
 ###
 
@@ -25,6 +25,13 @@ services_up:
 services_down:
 	docker-compose -f docker-compose.data-only.yml -f docker-compose.services.yml down
 
+###
+app_services_up:
+	docker-compose -f ./dockerize/app_services.yml up -d
+
+app_services_down:
+	docker-compose -f ./dockerize/app_services.yml down
+	
 ###
 
 start_pools:
