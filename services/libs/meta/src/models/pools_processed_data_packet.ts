@@ -1,4 +1,3 @@
-
 /* 
 pub struct PoolData {
     pub id: usize,
@@ -13,7 +12,7 @@ export class PoolProcessedDataPacket {
 
     public token0_id: number;
     public token1_id: number;
-    
+
     public weight: number;
 }
 

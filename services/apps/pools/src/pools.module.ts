@@ -1,15 +1,16 @@
 
 import { CacheModule, Module } from "@nestjs/common";
-import { ClientsModule, RedisContext, Transport } from "@nestjs/microservices";
+import { ClientsModule, Transport } from "@nestjs/microservices";
 
 import { MetaModule, MetaService } from "@positivedelta/meta";
 
 import { PoolsController } from "./pools.controller";
 import { PoolsService } from "./pools.service";
 
-import { TokenService } from "./services/token.service";
-import { FactoryService } from "./services/factory.service";
+//import { TokenService } from "./services/token.service";
+//import { FactoryService } from "./services/factory.service";
 import { DexGuruService } from "./services/dex_guru.service";
+
 
 import redisStore from "cache-manager-redis-store";
 @Module({
@@ -40,12 +41,12 @@ import redisStore from "cache-manager-redis-store";
     MetaModule,
   ],
 
-  controllers: [PoolsController],
+  controllers: [ PoolsController ],
 
   providers: [
     PoolsService,
-    TokenService,
-    FactoryService,
+    //TokenService,
+    //FactoryService,
     DexGuruService,
     MetaService,
   ],

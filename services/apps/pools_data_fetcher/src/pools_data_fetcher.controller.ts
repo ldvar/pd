@@ -8,7 +8,7 @@ import {
 //  ServerKafka,
 } from '@nestjs/microservices';
 
-import { Observable, interval, repeat } from 'rxjs';
+import { Observable, firstValueFrom, interval, repeat } from 'rxjs';
 import { OnEvent, EventEmitter2} from '@nestjs/event-emitter';
 
 import { ConfigService } from "@nestjs/config";
@@ -16,7 +16,7 @@ import { ConfigService } from "@nestjs/config";
 import { PoolsDataFetcherService } from './pools_data_fetcher.service';
 import { PoolMetadata } from 'apps/pools/src/models/pool';
 
-import { patterns } from '@positivedelta/meta/config';
+import { patterns, pools_config } from '@positivedelta/meta/config';
 
 import { DataPage } from '@positivedelta/meta/models/interactions';
 
@@ -49,11 +49,11 @@ export class PoolsDataFetcherController {
 
     ///
 
-    setPools(pools) {
+    setPools(pools: PoolMetadata[]) {
         this.check_pools = pools;
     }
 
-    addPools(pools) {
+    addPools(pools: PoolMetadata[]) {
         this.check_pools = this.check_pools.concat(pools);
     }
 
@@ -73,17 +73,22 @@ export class PoolsDataFetcherController {
     }
 
     async getPoolsPage(page: number) {
-        Logger.error("loading page");
+        Logger.log("loading/waiting for pools metadata page...");
 
         let callback = (page, data, rest) => this.eventEmitter.emit(PageLoadedEvent.pattern, 
             new PageLoadedEvent(page, data, rest,
                 p => { this.getPoolsPage(p+1); } ,
                 _ => { this.publishFinished(); },
-                d => { this.addPools(d); }) );
-        
-        await this.getPoolsPageObservable(page).forEach( data => {
+                d => { this.addPools(d); }) 
+        );
+
+        await firstValueFrom(this.getPoolsPageObservable(page)).then(data => {
             callback(page, data.data, data.rest);
-            Logger.error("page loaded");
+
+            Logger.log("pools metadata page loaded");
+        }).catch( (err) => {
+            Logger.error("Failed loading pools metadata page: ");
+            Logger.error(err);
         });
     }
 
@@ -94,19 +99,28 @@ export class PoolsDataFetcherController {
         await payload.update_data_callback(payload.data);
 
         if (payload.data.length == 0 || payload.rest <= 0) {
-            Logger.error("finished fetching pools");
+            Logger.log("finished fetching pool metadata");
             payload.finish_callback();
         }
         else {
-            Logger.error("trying to start next page loading");
+            Logger.log("trying to start next page loading");
             payload.get_next_callback(payload.page);
+        }
+    }
+
+    @OnEvent(FetchFinishedEvent.pattern, {objectify: true, "async": false})
+    async handleLoadFinish(oayload: FetchFinishedEvent) {
+        // TODO make it two different variables
+        let pools_number_limit = pools_config.data_fetch.multicall_size_limit
+        if (pools_number_limit < this.check_pools.length) {
+            this.setPools(this.check_pools.slice(0, pools_number_limit));
         }
     }
 
     ///
 
     async mainLoop() {
-        const source = interval(5000);
+        const source = interval(pools_config.data_fetch.delay);
         source.pipe(repeat()).subscribe( async _ => {
             let dataPacket = await this.poolsDataFetcherService.fetchDataPacket(this.check_pools);
 

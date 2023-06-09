@@ -4,10 +4,10 @@ import { Cache } from 'cache-manager';
 
 import { ConfigService } from '@nestjs/config';
 
-import { Token } from '@uniswap/sdk';
+//import { Token } from '@uniswap/sdk';
 
 import { PoolMetadata } from './models/pool';
-import { TokenMetadata } from './models/token';
+//import { TokenMetadata } from './models/token';
 
 import { DexGuruService } from './services/dex_guru.service';
 import { TokensData } from "./models/token";

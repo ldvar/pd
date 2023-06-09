@@ -1,9 +1,9 @@
 
 import { Injectable, Logger, Inject } from '@nestjs/common';
 
-import DexGuru, { AmmChoices, ChainChoices } from 'dexguru-sdk';
+import DexGuru, { AmmChoices, ChainChoices, SwapsBurnsMintsListModel, SwapBurnMintModel } from 'dexguru-sdk';
 
-import { chainId, ammTypes, token_symbols } from '@positivedelta/meta/config';
+import { chainId, ammTypes, debug_config, pools_config } from '@positivedelta/meta/config';
 import { ConfigService } from '@nestjs/config';
 
 import { PoolMetadata, PoolType } from '../models/pool';
@@ -17,39 +17,45 @@ export class DexGuruService {
 
   constructor(@Inject(ConfigService) private configService: ConfigService) {
     const api_key = configService.get<string>("DEX_GURU_API_KEY");
+
     this.sdk = new DexGuru(
       api_key,
-      'https://api.dev.dex.guru',
+      'https://api.dev.dex.guru'
     );
+    
   }
 
-  async recursiveRequest(sdk_fn: Function, ...args) {
-    let raw_result = [];
+  async recursiveRequest<D, R extends { total: number; data: D[]}>(sdk_fn: (...sdk_fn_args: any[]) => Promise<R>, ...args: any[]) {
+    let raw_result: D[] = [];
 
     // api pagination limit
     const limit = 100;
     let offset = 0;
-    let temp_length = 0;
-    let temp_result;
+    let total = 0;
 
     while (true) {
-      let done = true;
       try {
-        temp_result = await sdk_fn(...args, undefined, undefined, undefined, limit, offset);
-        temp_length = temp_result.data.length;
-        raw_result = raw_result.concat(temp_result.data);
+      //let done = true;
 
+      let temp_result = await sdk_fn(...args, undefined, undefined, undefined, limit, offset)
+        .catch( (err) => {
+          Logger.error(err);
+          return { total: 0, data: [] as D[] };
+      });
+
+      if (temp_result.data.length <= 0) break;
+
+      offset = raw_result.push(...temp_result.data);
+
+      //if (!done) continue;
+
+      Logger.log("Loading pools metadata... " + offset.toString() + " of " + temp_result.total);
+
+      if (offset >= temp_result.total) break;
+      if (offset >= pools_config.metadata_fetch_pools_number_limit) break; // dexguru retries indefinitely after achieving IP request limit...
       } catch (e) {
-        done = false;
+        
       }
-
-      if (!done) continue;
-
-      offset += temp_length;
-      Logger.error(raw_result.length);
-      Logger.error(temp_result.total);
-
-      if ((offset >= temp_result.total) || temp_length == 0) break;
     }
 
     return raw_result;
@@ -78,13 +84,13 @@ export class DexGuruService {
   }
 
   async getAmmPools(amm_names: string[], typesDict): Promise<PoolMetadata[]> {
-    const ammChoices = amm_names.join(',');
+    let ammChoices = amm_names.join(',');
 
-    const amm_mints = await this.recursiveRequest(
+    let amm_mints = await this.recursiveRequest<SwapBurnMintModel, SwapsBurnsMintsListModel>(
         this.sdk.getAmmsMints,
         this.dexGuruChainId,
         ammChoices,
-      );/*,
+    );/*,
       amm_burns = await this.recursiveRequest(
         this.sdk.getAmmsBurns,
         this.dexGuruChainId,
@@ -96,16 +102,13 @@ export class DexGuruService {
     );*/
 
 
-    const pools = amm_mints
+    let pools = amm_mints
       .reduce((acc, amm_mint) => {
-          return acc.keys.includes(amm_mint.pair_address) ?
-           acc : 
-              { keys: acc.keys.concat([amm_mint.pair_address]),
-                values: acc.values.concat([amm_mint]) };
+        return acc.keys.includes(amm_mint.pair_address) ?
+          acc : { keys: acc.keys.concat([amm_mint.pair_address]),
+                  values: acc.values.concat([amm_mint])
+        };
       }, { keys: [], values: [] }).values
-      /*.filter(
-        (amm_mint) => !burned_amm_addresses.includes(amm_mint.pair_address),
-      )*/
       .map((amm_mint) => {
         return {
           type: (amm_mint.amm) == "uniswap_v3" ? PoolType.UniswapV3 : PoolType.UniswapV2,
@@ -115,7 +118,7 @@ export class DexGuruService {
         } as PoolMetadata;
       });
 
-      Logger.error(pools.length);
+    Logger.log("Loaded " + pools.length.toString() + " AMM pools");
 
     return pools;
   }

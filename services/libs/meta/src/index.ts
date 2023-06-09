@@ -1,3 +1,3 @@
 
-export * from './meta.module';
-export * from './meta.service';
+export * from "./meta.module";
+export * from "./meta.service";

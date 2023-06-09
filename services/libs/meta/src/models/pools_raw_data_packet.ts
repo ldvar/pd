@@ -15,8 +15,11 @@ export class PoolRawDataPacket {
     public token0_address: string;
     public token1_address: string;
 
-    public token0_reserve: string;
-    public token1_reserve: string;
+    public token0_reserve: string | undefined;
+    public token1_reserve: string | undefined;
+
+    public value0: string | any;
+    public value1: string | any;
 
     public fee: number;
 }

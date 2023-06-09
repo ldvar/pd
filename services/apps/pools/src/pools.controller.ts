@@ -1,4 +1,5 @@
-import { Controller, Inject, Logger } from "@nestjs/common";
+import { Controller, Inject, LogLevel, Logger } from "@nestjs/common";
+Logger.overrideLogger(["log"] as LogLevel[]);
 
 import {
   MessagePattern,
@@ -53,13 +54,12 @@ export class PoolsController {
     let result = await this.poolsService.getTokensData();
 
     let keys = Object.getOwnPropertyNames(result);
-    Logger.error(keys.length);
-    let slice = Object.fromEntries(keys.slice(offset, offset + pageLimit).map(addr => [addr, result[addr]]));
+    let slice = Object.fromEntries(keys.slice(offset, offset + pageLimit).map(addr => [addr, result[addr]])); // fix pagination
 
     let out = {};
     out["data"] = slice;
     out["rest"] = keys.length - offset - pageLimit;
 
-    return out as DataPage<TokensData>
+    return out as DataPage<TokensData>;
   }
 }

@@ -15,6 +15,7 @@ import { PoolsDataFetcherController } from './pools_data_fetcher.controller';
 import { MetaModule, MetaService } from '@positivedelta/meta';
 
 import { ethersConfig, ethers_chainId, eventEmitterConfig } from '@positivedelta/meta/utils';
+import { MulticallFetcherUtilsService } from './services/multicall_fetcher_utils.service';
 
 @Module({
     imports: [
@@ -60,7 +61,8 @@ import { ethersConfig, ethers_chainId, eventEmitterConfig } from '@positivedelta
     controllers: [ PoolsDataFetcherController ],
     
     providers: [
-        PoolsDataFetcherService, 
+        PoolsDataFetcherService,
+        MulticallFetcherUtilsService,
         MetaService,
     ],
     

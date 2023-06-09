@@ -5,9 +5,12 @@
 		},
 		{
 			"path": "rust/opportunities_primary_search"
+		},
+		{
+			"path": "../poly-flash"
 		}
 	],
 	"settings": {
-		
+
 	}
 }
