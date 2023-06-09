@@ -4,10 +4,7 @@ import { Cache } from 'cache-manager';
 
 import { ConfigService } from '@nestjs/config';
 
-//import { Token } from '@uniswap/sdk';
-
 import { PoolMetadata } from './models/pool';
-//import { TokenMetadata } from './models/token';
 
 import { DexGuruService } from './services/dex_guru.service';
 import { TokensData } from "./models/token";
@@ -19,10 +16,7 @@ export class PoolsService {
     @Inject(CACHE_MANAGER) private poolsCacheManager: Cache,
     private configService: ConfigService,
     private dexGuruService: DexGuruService, //private factoryService: FactoryService,
-  ) {
-
-    //this.setTokensDataCache({});
-  }
+  ) {}
 
   //////////////////////////////////
 
@@ -48,9 +42,6 @@ export class PoolsService {
     pools = await this.getPoolsForCheckFromAPI();
     await this.setPoolsCache(pools);
 
-    // Get pools from chain using AMM factories
-    //addresses = await this.getPoolsForCheckFromFactories();
-
     return pools;
   }
 
@@ -66,10 +57,6 @@ export class PoolsService {
 
     return pools;
   }
-
-  /*async getPoolsForCheckFromFactories(): Promise<Pool[]> {
-    return null; //TODO
-  }*/
 
   async getPoolsForCheckFromCache(): Promise<PoolMetadata[]> {
     /*const tokenInfo = await this.poolsCacheManager.get("pool_addresses");

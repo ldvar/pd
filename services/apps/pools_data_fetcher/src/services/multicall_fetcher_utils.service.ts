@@ -7,10 +7,11 @@ import { abi as abi_v2 } from "@uniswap/v2-core/build/IUniswapV2Pair.json";
 import { abi as abi_v3 } from "@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json"
 
 import { PoolMetadata, PoolType } from "apps/pools/src/models/pool";
-import { CallStruct } from "../models/call";
-import { get_uniswap_v2_call_struct, get_uniswap_v3_call_struct } from "./realtime_fetch_utils";
 
 import { PoolRawDataPacket } from "@positivedelta/meta/models/pools_raw_data_packet";
+
+import { CallStruct } from "../models/call";
+import { get_uniswap_v2_call_struct, get_uniswap_v3_call_struct } from "./realtime_fetch_utils";
 
 
 @Injectable()
@@ -81,6 +82,7 @@ export class MulticallFetcherUtilsService {
                     //r = Object.assign(r, call_st.pool)
                     r.value0 = vals["token0_reserve"];
                     r.value1 = vals["token1_reserve"];
+                    r.fee = 3000;
                     return r;
                 case PoolType.UniswapV3:
                     //r = Object.assign(r, call_st.pool);
@@ -91,8 +93,6 @@ export class MulticallFetcherUtilsService {
                     throw new Error("Wrong pool type");
             };
         };
-
-
     }
 
     ///
@@ -113,28 +113,28 @@ export class MulticallFetcherUtilsService {
     async processHomogenicCallBatch(call_group_arr, func_name, provider) {
         let curr_calls_og_idx: number[] = call_group_arr.map( c_st => c_st.orig_idx)
         let curr_calls = call_group_arr.map( c_st => c_st.contract_call);
-    
+
         let res = await provider.all(
-          curr_calls
-        ).then(res_a => { 
-          let entries = res_a.map( (res_e, res_idx: number) => {
-            let orig_idx = curr_calls_og_idx[res_idx];
-    
-            return {
-              orig_idx: orig_idx,
-              call_str_obj: curr_calls[res_idx],
-              res_val: res_e
+            curr_calls
+        ).then(res_a => {
+            let entries = res_a.map( (res_e, res_idx: number) => {
+                let orig_idx = curr_calls_og_idx[res_idx];
+
+                return {
+                    orig_idx: orig_idx,
+                    call_str_obj: curr_calls[res_idx],
+                    res_val: res_e
+                };
+            });
+
+            let objects = entries;
+            let result_object = {
+                func_name: func_name as string,
+                res_e: objects
             };
-          });
-          
-          let objects = entries;
-          let result_object = { 
-            func_name: func_name as string,
-            res_e: objects 
-          };
-          return result_object;
+            return result_object;
         });
-    
+
         return res;
-      }
+    }
 }

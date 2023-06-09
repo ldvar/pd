@@ -1,11 +1,7 @@
 
 import { Contract, ContractCall } from "ethers-multicall";
 
-///import { toHex } from "@uniswap/v3-sdk";
-
 import { PoolType } from "apps/pools/src/models/pool";
-import { Logger } from "@nestjs/common";
-//import { onchain_fetch_config } from "@positivedelta/meta/config";
 
 
 export class CallStruct {
@@ -41,9 +37,6 @@ export class CallStruct {
 
         //this.functions = functions;
         this.functions = ((this.type == PoolType.UniswapV2) ? uniswap_v2_temp : uniswap_v3_temp)();
-       
-        //Logger.error(this.functions);
-        //Logger.error(this.type);
     }
 
     getContractCall(func_name: string) {

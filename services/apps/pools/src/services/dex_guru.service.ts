@@ -1,10 +1,11 @@
 
 import { Injectable, Logger, Inject } from '@nestjs/common';
 
-import DexGuru, { AmmChoices, ChainChoices, SwapsBurnsMintsListModel, SwapBurnMintModel } from 'dexguru-sdk';
+import DexGuru, { ChainChoices, SwapsBurnsMintsListModel, SwapBurnMintModel } from 'dexguru-sdk';
 
-import { chainId, ammTypes, debug_config, pools_config } from '@positivedelta/meta/config';
 import { ConfigService } from '@nestjs/config';
+
+import { chainId, ammTypes, pools_config } from '@positivedelta/meta/config';
 
 import { PoolMetadata, PoolType } from '../models/pool';
 import { TokenMetadata } from '../models/token';
@@ -22,7 +23,6 @@ export class DexGuruService {
       api_key,
       'https://api.dev.dex.guru'
     );
-    
   }
 
   async recursiveRequest<D, R extends { total: number; data: D[]}>(sdk_fn: (...sdk_fn_args: any[]) => Promise<R>, ...args: any[]) {

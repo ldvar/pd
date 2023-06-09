@@ -1,22 +1,21 @@
+
 import { Controller, Inject, LogLevel, Logger } from "@nestjs/common";
 Logger.overrideLogger(["log"] as LogLevel[]);
 
 import {
   MessagePattern,
   ClientKafka,
-  EventPattern,
   Payload,
 } from "@nestjs/microservices";
 
 import { ConfigService } from "@nestjs/config";
 
-import { PoolMetadata } from "./models/pool";
-import { PoolsService } from "./pools.service";
-
-import { TokensData } from "./models/token";
-
 import { patterns, pageLimit } from '@positivedelta/meta/config';
 import { DataPage } from '@positivedelta/meta/models/interactions';
+
+import { PoolsService } from "./pools.service";
+import { PoolMetadata } from "./models/pool";
+import { TokensData } from "./models/token";
 
 
 @Controller()
@@ -47,7 +46,7 @@ export class PoolsController {
   @MessagePattern(patterns.get_tokens)
   async getTokensData(
     @Payload() data: any,
-  ) /**//**/ {
+  ) {
     let page = data["page"];
     let offset: number = page * pageLimit;
 

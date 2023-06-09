@@ -20,7 +20,7 @@ export class ArbitrageExecuteController {
   ///
 
   @EventPattern(patterns.opportunities_primary_found)
-  async handleFoundOpportunitiesDataPacket(@Payload() data_packet: Opportunity[]) {
+  async handleFoundOpportunitiesDataPacket(@Payload() data_packet: HotOpportunity[]) {
     let handled_packet = await this.arbitrageExecuteService.handleDataPacket(data_packet);
     
     /*

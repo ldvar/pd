@@ -44,14 +44,14 @@ export const onchain_fetch_config = {
 export const pools_config = {
   data_fetch: {
     delay: 5000,
-    multicall_size_limit: 10000, // TODO: implement independently multicall splitting and pool database truncate
+    multicall_size_limit: 500, // TODO: implement independently multicall splitting and pool database truncate
   },
 
-  metadata_fetch_pools_number_limit: 500,
+  metadata_fetch_pools_number_limit: 4000,
 }
 
 export const debug_config = {
-  dex_guru_no_retry: true,
+  dex_guru_no_retry: true, // not implemented
 }
 
 export const pageLimit: number = 100;

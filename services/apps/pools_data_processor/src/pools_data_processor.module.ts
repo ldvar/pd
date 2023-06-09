@@ -6,9 +6,11 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 
 import { PoolsDataProcessorController } from './pools_data_processor.controller';
 import { PoolsDataProcessorService } from './pools_data_processor.service';
-
-import { ethers_chainId, eventEmitterConfig } from '@positivedelta/meta/utils';
 import { SwapMathService } from './services/swap_math.service';
+
+import { eventEmitterConfig } from '@positivedelta/meta/utils';
+
+
 
 @Module({
     imports: [

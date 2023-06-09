@@ -2,11 +2,6 @@
 import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-//const CoinMarketCap = require('coinmarketcap-api');
-//import ApiConnectionException from '../exceptions/api-connection.exception';
-
-
 @Injectable()
 export class TokenService {
   private static client;

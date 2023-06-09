@@ -7,8 +7,6 @@ import { MetaModule, MetaService } from "@positivedelta/meta";
 import { PoolsController } from "./pools.controller";
 import { PoolsService } from "./pools.service";
 
-//import { TokenService } from "./services/token.service";
-//import { FactoryService } from "./services/factory.service";
 import { DexGuruService } from "./services/dex_guru.service";
 
 
@@ -45,8 +43,6 @@ import redisStore from "cache-manager-redis-store";
 
   providers: [
     PoolsService,
-    //TokenService,
-    //FactoryService,
     DexGuruService,
     MetaService,
   ],

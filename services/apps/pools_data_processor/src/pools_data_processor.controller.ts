@@ -1,11 +1,13 @@
+
 import { Controller, Inject, Logger } from "@nestjs/common";
+
 import { ClientKafka, EventPattern, Payload } from "@nestjs/microservices";
 
 import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
 
 import { Observable } from "rxjs";
 
-import { TokenMetadata, TokensData } from "apps/pools/src/models/token";
+import { TokensData } from "apps/pools/src/models/token";
 
 import { PoolsRawDataPacket } from "@positivedelta/meta/models/pools_raw_data_packet";
 import { patterns } from "@positivedelta/meta/config";
@@ -13,7 +15,7 @@ import { PageLoadedEvent, FetchFinishedEvent } from "@positivedelta/meta/paginat
 import { DataPage } from "@positivedelta/meta/models/interactions";
 
 import { PoolsDataProcessorService } from "./pools_data_processor.service";
-import { FoundPathsDataPacket } from "./models/found_path.model";
+import { FoundPathsDataPacket, FoundPathsRawDataPacket } from "./models/found_path.model";
 
 
 @Controller()
@@ -108,12 +110,6 @@ export class PoolsDataProcessorController {
         }
     }
 
-    /*
-    getTokensData(): Observable<{ [address: string]: TokenMetadata }> {
-      return this.client.send(patterns.get_tokens, {});
-    }
-    */
-
     @EventPattern(patterns.pools_raw_data)
     async processDataPacket(@Payload() data_packet: PoolsRawDataPacket) {
         const processed_packet = this.poolsDataProcessorService.processRawDataPacket(data_packet);
@@ -138,10 +134,9 @@ export class PoolsDataProcessorController {
 
     @EventPattern(patterns.opportunities_primary_found)
     async handleFoundOpportunitiesDataPacket(
-        @Payload() data_packet: FoundPathsDataPacket,
+        @Payload() raw_data_packet: FoundPathsRawDataPacket,
     ) {
-        //let pools_processing_cache = this.poolsDataProcessorService.pools_state_cache;
-
+        let data_packet = new FoundPathsDataPacket(raw_data_packet);
         let hot_opportunities = this.poolsDataProcessorService.processRawOpportunitiesData(data_packet);
         
         this.client.emit(
@@ -149,5 +144,4 @@ export class PoolsDataProcessorController {
             JSON.stringify(hot_opportunities),
         );
     }
-
 }

@@ -1,7 +1,8 @@
 
-import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable, LogLevel, Logger } from '@nestjs/common';
+Logger.overrideLogger(["log"] as LogLevel[]);
 
-import { Contract, Provider as MulticallProvider } from 'ethers-multicall';
+import { Provider as MulticallProvider } from 'ethers-multicall';
   
 import {
   InjectEthersProvider,
@@ -10,21 +11,15 @@ import {
 
 import { ConfigService } from '@nestjs/config';
 
-//import { abi as abi_v2 } from "@uniswap/v2-core/build/IUniswapV2Pair.json";
-//import { abi as abi_v3 } from "@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json"
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 
 import { PoolMetadata, PoolType } from 'apps/pools/src/models/pool';
 
-import { PoolRawDataPacket, PoolsRawDataPacket } from '@positivedelta/meta/models/pools_raw_data_packet';
-import { chainId, onchain_fetch_config } from '@positivedelta/meta/config';
-//import { toHex } from "@uniswap/v3-sdk";
-
-//import { ChainId, Token, Pair, TokenAmount, Price } from "@uniswap/sdk";
+import { PoolsRawDataPacket } from '@positivedelta/meta/models/pools_raw_data_packet';
+import { chainId, } from '@positivedelta/meta/config';
 
 import { CallStruct } from './models/call';
 
-//import { get_uniswap_v2_call_struct, get_uniswap_v3_call_struct } from './services/realtime_fetch_utils';
 import { MulticallFetcherUtilsService } from './services/multicall_fetcher_utils.service';
 import { call_group_fnames, groupCallsByFuncNames } from './services/realtime_fetch_utils';
 
@@ -107,7 +102,7 @@ export class PoolsDataFetcherService {
 
     // TODO reimplement as universal processing for multiple AMM/dex types
 
-    Logger.error(">>> loading pools state data");
+    Logger.log(">>> loading pools state data");
 
     // structured representation for funther call splitting
     let calls_structure: CallStruct[] = this.multicallFetcherUtilsService.buildFullBatchCallStructure(pools);

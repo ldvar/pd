@@ -3,9 +3,10 @@ import { Contract } from "ethers-multicall"
 
 import { PoolType } from "apps/pools/src/models/pool"
 
-import { CallStruct } from "../models/call"
 import { onchain_fetch_config } from "@positivedelta/meta/config"
 
+import { CallStruct } from "../models/call"
+import { toHex } from "@uniswap/v3-sdk";
 
 export const call_group_fnames = 
                         onchain_fetch_config.abi_functions_patterns.uniswap_v2
@@ -22,7 +23,7 @@ export function get_uniswap_v2_call_struct(contract: Contract): CallStruct {
             return [
                 d[0][0],
                 d[0][1],
-            ];
+            ].map(toHex);
         },
         [
             "token0_reserve",
@@ -90,4 +91,3 @@ export function groupCallsByFuncNames(call_struct_arr: CallStruct[]) {
 
     return call_groups;
 }
-

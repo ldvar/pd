@@ -1,8 +1,4 @@
 
-import { PoolMetadata } from "apps/pools/src/models/pool";
-import { TokenMetadata } from "apps/pools/src/models/token";
-
-
 export class Hop {
     public protocol: number;
     public data: string;
@@ -21,7 +17,7 @@ export class FlashSwapParams {
 
 // slightly abundant representation for easy processing
 export class HotOpportunity {
-    public input_token: TokenMetadata;
+    public input_token: string;
     public best_input: number;
     public expected_profit: number;
 
