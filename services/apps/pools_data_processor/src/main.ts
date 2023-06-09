@@ -1,6 +1,9 @@
+
 import { NestFactory } from '@nestjs/core';
-import { PoolsDataProcessorModule } from './pools_data_processor.module';
 import { Transport } from '@nestjs/microservices';
+
+import { PoolsDataProcessorModule } from './pools_data_processor.module';
+
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice(PoolsDataProcessorModule, {

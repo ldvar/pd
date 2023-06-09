@@ -3,16 +3,26 @@ import { CACHE_MANAGER, Inject, Injectable, Logger,} from '@nestjs/common';
 
 import { Cache } from 'cache-manager';
 
+import { ChainId, Token } from '@uniswap/sdk';
+
 import { PoolRawDataPacket, PoolsRawDataPacket } from '@positivedelta/meta/models/pools_raw_data_packet';
 import { PoolProcessedDataPacket, PoolsProcessedDataPacket } from '@positivedelta/meta/models/pools_processed_data_packet';
+
 import { TokenMetadata } from 'apps/pools/src/models/token';
-import { BigintIsh, ChainId, Token, TokenAmount } from '@uniswap/sdk';
-import { chainId } from '@positivedelta/meta/config';
-import { PoolMetadata } from 'apps/pools/src/models/pool';
+import { PoolMetadata, PoolType } from 'apps/pools/src/models/pool';
+
+import { chainId, dodoFlashswapAmmPools } from '@positivedelta/meta/config';
+
+import { SwapMathService } from "./services/swap_math.service";
+import { FoundPathsDataPacket } from "./models/found_path.model";
+import { Hop, HotOpportunity, Route } from "./models/opportunity.model";
+import { PoolProcessedMetadata } from './models/pools_processed_metadata';
 
 
 @Injectable()
 export class PoolsDataProcessorService {
+    
+    // state data
     public tokens_data: { [address: string]: TokenMetadata };
     public token_sdk_objects: { [address: string]: Token };
 
@@ -21,16 +31,128 @@ export class PoolsDataProcessorService {
     public pool_index: { [address: string]: PoolMetadata };
     public pool_reverse_index: { [id: number]: string };
     public pool_id_last: number;
-    
+
+    public pools_recent_cache: {
+        raw_data: PoolsRawDataPacket,
+        processed: PoolProcessedMetadata[],
+    };
+
+
     constructor(
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
+        private swapMathService: SwapMathService,
     ) {
         this.pool_index = {};
         this.pool_reverse_index = {};
         this.pool_id_last = 0;
+
+        this.pools_recent_cache = { raw_data: null, processed: null };
+    }
+
+    /// state access methods
+
+    poolFromIdx(idx: number): PoolMetadata {
+        let pool_address = this.pool_reverse_index[idx - ( (idx <= this.pool_id_last) ? 0 : this.pool_id_last)];
+        return this.pool_index[pool_address];
     }
 
     ///
+
+    getFlashloanAddress(token: TokenMetadata) { 
+        // TODO implement support for Uniswap V3 and other flashloan providers
+
+        return dodoFlashswapAmmPools[token.symbol];
+    }
+
+    /// opportunity object build utils
+
+    getFlashSwapParams(input_token, input_amount, routes: Route[]) {
+        return {
+            pool_address: this.getFlashloanAddress(input_token),
+            amount: input_amount,
+            routes: routes,
+        };
+    }
+
+    ///
+
+    processRawOpportunitiesData(data_packet: FoundPathsDataPacket): HotOpportunity[] {
+        let raw_opportunities = data_packet.edge_paths.map( (edge_path, idx) => { 
+            return {
+                input_token: this.tokens_data[this.token_index[data_packet.node_paths[idx][0]]],
+
+                swap_data: edge_path.map((edge) => {
+                    let pool = this.poolFromIdx(edge); 
+                    let p = this.pools_recent_cache.processed[pool.id];
+                    let direction = edge < this.pool_id_last;
+
+                    if (!direction) {
+                        p.metadata.token0_address = pool.token1_address;
+                        p.metadata.token1_address = pool.token0_address;
+                        p = Object.assign(p, { 
+                            token0_reserve: p.token1_reserve,
+                            token1_reserve: p.token0_reserve
+                        });
+                    }
+
+                    return p;
+                }),
+            };
+        });
+
+        let hot_opportunities_data = raw_opportunities.map( o => {
+            let [best_x, best_y] = this.swapMathService.calculateOptimalSwapSequenceParams(o.swap_data);
+            return { 
+                o: o,
+                x: best_x,
+                y: best_y
+            };
+        }).filter(p => p[-1] > 0);
+
+        let results = hot_opportunities_data.map( (d) => {
+            let o = new HotOpportunity();
+        
+            let route = new Route();
+            route.part = 100;
+
+            route.hops = d.o.swap_data.map(p => {
+                return Object.assign(new Hop(), {
+                    protocol: p.metadata.type,
+                    data: p.metadata.address,
+                    path: [ p.metadata.token0_address, p.metadata.token1_address ]
+                });
+            })
+            
+            o.input_token = d.o.input_token;
+            o.best_input = d.x;
+            o.expected_profit = d.y;
+
+            o.swap_data = this.getFlashSwapParams(d.o.input_token, d.x, [ route ]);
+            
+            return o;
+        });
+
+        return results;
+    }
+
+    ///
+
+    getLatestGraph(): object[] {
+        return Object.entries(this.pool_index).map(([address, pool]) => {
+            // return data from variable pool adding token symbols
+            return {
+                "address": address,
+                "internal_id": pool.id,
+                "token0": pool.token0_address,
+                "token0_symbol": this.tokens_data[pool.token0_address].symbol,
+                "token1": pool.token1_address,
+                "token1_symbol": this.tokens_data[pool.token1_address].symbol,
+                "type": pool.type,
+            };
+        });
+    }
+
+    /// update pools/tokens state
 
     updateTokensData(tokens_data) {
         this.tokens_data = tokens_data;
@@ -50,38 +172,7 @@ export class PoolsDataProcessorService {
         }
     }
 
-    /// swap calculations
-
-    calculateAmount(token_address: string, amount: BigintIsh): number {
-        let token_amount;
-        try {
-        token_amount = new TokenAmount(this.token_sdk_objects[token_address], amount);
-        } catch (e) { 
-            return 0.0;
-        }
-        const amount_str = token_amount.toExact();
-        return parseFloat(amount_str);
-    }
-
-    calculateSwapWeight(p: PoolRawDataPacket): number {
-        const fee_k = 1.0 - (p.fee / 1.0e6); // UniswapV2 = TODO implement multiple dex types + fee handling
-
-        const r0 = this.calculateAmount(p.token0_address, p.token0_reserve);
-        const r1 = this.calculateAmount(p.token1_address, p.token1_reserve);
-
-        if (r0 === 0.0 || r1 === 0.0) {
-            return 0.0;
-        }
-
-        const q = r1 / r0;
-
-        const s = -Math.log(q * fee_k);
-        return s;
-    }
-
-    ///
-
-    indexPools(pools: PoolRawDataPacket[]) {
+    updatePoolsIndex(pools: PoolRawDataPacket[]) {
         pools.forEach( pool => {
             if ( !(pool.address in this.pool_index) ) {
 
@@ -101,54 +192,80 @@ export class PoolsDataProcessorService {
 
     ///
 
-    inversePoolsDataCopy(pools_data: PoolRawDataPacket[]) {
-        return pools_data.map( pool => {
-            let res = new PoolRawDataPacket();
-            res.address = pool.address;
-            res.fee = pool.fee;
-            res.type = pool.type;
-            res.token0_address = pool.token1_address;
-            res.token0_reserve = pool.token1_reserve;
-            res.token1_address = pool.token0_address;
-            res.token1_reserve = pool.token0_reserve;
+    /// data processing procedure
+
+    processRawPoolData(pool_data: PoolRawDataPacket) {
+        let result = new PoolProcessedMetadata();
+        result.metadata = Object.assign(pool_data);
+        
+        /// Uniswap V2
+        if (pool_data.type == PoolType.UniswapV2) {
+            result = Object.assign(result, 
+                this.swapMathService.convertReserves(pool_data, this.token_sdk_objects));
+            
+
+        } else {
+            /// TODO: Uniswap V3 & Dodo 1&2&3
+            
+        }
+
+        return result;
+    }
+
+    ///
+
+    inverseCopy(pools_metadata: PoolProcessedDataPacket[]) {
+        return pools_metadata.map( p => {
+            let res = Object.assign(new PoolProcessedDataPacket(), p);
+            res.weight * -1;
+            res.token0_id = p.token1_id;
+            res.token1_id = p.token0_id;
+            res.id = p.id + this.pool_id_last;
 
             return res;
         })
     }
 
-    /// data processing procedure
+    ///
 
-    // TODO fix inverse pools packet id associations
-    processRawDataPacket(data_packet_one_way: PoolsRawDataPacket): PoolsProcessedDataPacket {
-        this.indexPools(data_packet_one_way.pools_data);
+    processRawDataPacket(pools_data_packet: PoolsRawDataPacket): PoolsProcessedDataPacket {
+        let pools_data = pools_data_packet.pools_data;
 
-        let data_packet = data_packet_one_way;
-        let data_packet_second_way = this.inversePoolsDataCopy(data_packet_one_way.pools_data);
+        // refreshes id -> address & address -> pool metadata mapping
+        this.updatePoolsIndex(pools_data);
 
-        //data_packet.pools_data = data_packet.pools_data.concat(this.inversePoolsDataCopy(data_packet_one_way.pools_data));
+        // get preprocessed data array with (real/virtual) reserves
+        let pre_process_metadata = pools_data.map(this.processRawPoolData);
 
-        let pool_id_add_value = 110000;
-        //Logger.error(pool_id_add_value);
-        //Logger.error(this.tokens_data);
-        //Logger.error(this.pool_index);
+        // calculate linear swap weight
+        pre_process_metadata = pre_process_metadata.map( p => {
+            p.weight = 
+                this.swapMathService.calculateLinearSwapQByReserves(
+                    p.token0_reserve,
+                    p.token0_reserve,
+                    p.metadata.fee);
+            return p;
+        });
 
-        let transform = (inverse: boolean) => { return (pool_data: PoolRawDataPacket) => {
+        this.pools_recent_cache.processed = pre_process_metadata;
+
+        let pools_data_processed = pre_process_metadata.map( pool_data => {
             let res = new PoolProcessedDataPacket();
-            res.id = this.pool_index[pool_data.address].id + (inverse ? pool_id_add_value : 0);
-            res.weight = this.calculateSwapWeight(pool_data); 
-            res.token0_id = this.tokens_data[pool_data.token0_address].id;
-            res.token1_id = this.tokens_data[pool_data.token1_address].id;
-
+            res = Object.assign(res, {
+                id:     pool_data,
+                weight: this.swapMathService.calculateSwapLogWeight(pool_data.weight),
+                token0_id: this.tokens_data[pool_data.metadata.token0_address].id,
+                token1_id: this.tokens_data[pool_data.metadata.token1_address].id,
+            });
             return res;
-        }};
+        });
 
-        let pools_data_processed = data_packet.pools_data
-            .map(transform(false))
-            .concat(data_packet_second_way.map(transform(true)))
-            .reduce((acc: PoolProcessedDataPacket[], pool_data: PoolProcessedDataPacket) => { 
+        pools_data_processed = pools_data_processed
+            .reduce( (acc, pool_data) => { 
                 let ids = acc.map(pool => pool.id);
                 return (ids.includes(pool_data.id) ? acc : acc.concat([pool_data]));
-             }, []);
+            }, [])
+            .concat(this.inverseCopy(pools_data_processed));
 
         let result = new PoolsProcessedDataPacket();
         result.pools_data = pools_data_processed;

@@ -8,6 +8,7 @@ import { PoolsDataProcessorController } from './pools_data_processor.controller'
 import { PoolsDataProcessorService } from './pools_data_processor.service';
 
 import { ethers_chainId, eventEmitterConfig } from '@positivedelta/meta/utils';
+import { SwapMathService } from './services/swap_math.service';
 
 @Module({
     imports: [
@@ -37,6 +38,9 @@ import { ethers_chainId, eventEmitterConfig } from '@positivedelta/meta/utils';
 
     controllers: [ PoolsDataProcessorController ],
 
-    providers: [ PoolsDataProcessorService ],
+    providers: [ 
+        PoolsDataProcessorService,
+        SwapMathService,
+    ],
 
 }) export class PoolsDataProcessorModule {}
