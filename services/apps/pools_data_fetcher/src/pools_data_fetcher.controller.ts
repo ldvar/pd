@@ -1,26 +1,20 @@
 
 import { Controller, Inject, Logger } from '@nestjs/common';
 
-import {
-  ClientKafka,
-//  MessagePattern,
-//  Payload,
-//  ServerKafka,
-} from '@nestjs/microservices';
+import { ClientKafka } from '@nestjs/microservices';
 
 import { Observable, firstValueFrom, interval, repeat } from 'rxjs';
 import { OnEvent, EventEmitter2} from '@nestjs/event-emitter';
 
 import { ConfigService } from "@nestjs/config";
 
-import { PoolsDataFetcherService } from './pools_data_fetcher.service';
 import { PoolMetadata } from 'apps/pools/src/models/pool';
 
 import { patterns, pools_config } from '@positivedelta/meta/config';
-
 import { DataPage } from '@positivedelta/meta/models/interactions';
-
 import { PageLoadedEvent, FetchFinishedEvent } from '@positivedelta/meta/pagination'
+
+import { PoolsDataFetcherService } from './pools_data_fetcher.service';
 
 
 @Controller()

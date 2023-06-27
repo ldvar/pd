@@ -5,15 +5,26 @@
             "name": "pools",
             "type": "f5anything",
             "request": "launch",
-            "command": "cd services && yarn start pools",
+            "command": "cd services && yarn start pools"
+        },
+        {
+            "name": "arbitrage_execute",
+            "type": "f5anything",
+            "request": "launch",
+            "command": "cd services && yarn start arbitrage_execute"
         },
         {
             "name": "pools_data_fetcher",
             "type": "f5anything",
             "request": "launch",
-            "command": "cd services && yarn start pools_data_fetcher",
+            "command": "cd services && yarn start pools_data_fetcher"
         },
-
+        {
+            "name": "pools_data_processor",
+            "type": "f5anything",
+            "request": "launch",
+            "command": "cd services && yarn start pools_data_processor"
+        },
         {
             "name": "prepare storage",
             "type": "f5anything",
@@ -24,16 +35,24 @@
             "name": "services up",
             "type": "f5anything",
             "request": "launch",
-            "command": "sudo make services_up"
+            "command": "sudo make data_services_up"
         },
         {
             "name": "services down",
             "type": "f5anything",
             "request": "launch",
-            "command": "sudo make services_down"
+            "command": "sudo make data_services_down"
         },
-
-        
-
+        {
+            "name": "Docker Node.js Launch",
+            "type": "docker",
+            "request": "launch",
+            "preLaunchTask": "docker-run: debug",
+            "platform": "node",
+            "node": {
+                "package": "${workspaceFolder}/services/package.json",
+                "localRoot": "${workspaceFolder}/services"
+            }
+        }
     ]
 }

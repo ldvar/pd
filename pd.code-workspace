@@ -11,6 +11,9 @@
 		}
 	],
 	"settings": {
+		"debug.inlineValues": "on",
+		"javascript.preferences.importModuleSpecifier": "non-relative",
+		"typescript.preferences.importModuleSpecifier": "non-relative"
 
 	}
 }

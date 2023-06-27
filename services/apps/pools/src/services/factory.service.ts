@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
-import { Factory } from '../models/factory';
-import { PoolType } from '../models/pool';
+import { Factory } from '@positivedelta/apps/pools/models/factory';
+import { PoolType } from '@positivedelta/apps/pools/models/pool';
 
 @Injectable()
 export class FactoryService {

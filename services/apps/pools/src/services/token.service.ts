@@ -1,6 +1,8 @@
 
-import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+
 
 @Injectable()
 export class TokenService {

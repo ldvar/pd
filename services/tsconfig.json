@@ -1,34 +1,55 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
+    "module": "CommonJS",
     "declaration": true,
     "removeComments": true,
+    "emitDeclarationOnly": true,
     "emitDecoratorMetadata": true,
+    "allowArbitraryExtensions": true,
+  
+    "allowImportingTsExtensions": true,
+  
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "allowJs": false,
+    "allowJs": true,
     "target": "ESNext",
+  
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
     "resolveJsonModule": true,
     "incremental": true,
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "strictNullChecks": false,
     "noImplicitAny": false,
+    
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
+  
     "paths": {
+      
+      
       "@positivedelta/meta": [
-        "libs/meta/src"
+        "libs/meta/src/index.ts"
       ],
       "@positivedelta/meta/*": [
-        "libs/meta/src/*"
+        "libs/meta/src/*.ts"
       ],
-      "@positivedelta/apps/*": [
-        "apps/*/src"
+      
+      "@positivedelta/apps/pools/*": [
+        "apps/pools/src/*"
       ],
+      "@positivedelta/apps/pools_data_processor/*": [
+        "apps/pools_data_processor/src/*.ts"
+      ],
+      "@positivedelta/apps/pools_data_fetcher/*": [
+        "apps/pools_data_fetcher/src/*.ts"
+      ],
+      "@positivedelta/apps/arbitrage_execute/*": [
+        "apps/arbitrage_execute/src/*.ts"
+      ],
+
     }
   }
 }

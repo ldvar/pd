@@ -1,15 +1,14 @@
 
+// dodoex on polygon died already while this bot was slowly built...
 export const dodoFlashswapAmmPools = {
-  WETH: "0x5333Eb1E32522F1893B7C9feA3c263807A02d561",
-  WMATIC: "0x10Dd6d8A29D489BEDE472CC1b22dc695c144c5c7",
-  USDC: "0x10Dd6d8A29D489BEDE472CC1b22dc695c144c5c7",
+  USDT: "0x813fddeccd0401c4fa73b092b074802440544e52",
+  WMATIC: "0x4b658c395804f90d76aa1995391e4730c7208de7",
+  USDC: "0x813fddeccd0401c4fa73b092b074802440544e52",
 };
 
 //export const chainId =    42161; //56; // bsc //137; // polygon
 
-export const chainId = 137; //56; // bsc //137; // polygon
-
-export const ammTypes = [ "uniswap_v2" ]; //, 'uniswap_v3' ];
+export const chainId = 42161; //56; // bsc //137; // polygon
 
 // event and message patterns
 export const patterns = {
@@ -24,10 +23,16 @@ export const patterns = {
   pools_get_latest_graph: "pools.graph.get_latest",
   pools_latest_graph: "pools.graph.latest_requested",
 
-  opportunities_primary_found: "opportunities.primary_search.found", // repeat in file "config.rs"
+  opportunities_primary_found: "opportunities.primary_search.found", // repeat in file "config.rs" in rust service
   opportunities_realtime: "opportunities.realtime",
 };
 
+export const ammTypes = [ 
+  "uniswap_v2",
+  "uniswap_v3"
+];
+
+// TODO: move closure contract method calls here aswell
 export const onchain_fetch_config = { 
   abi_functions_patterns: {
     uniswap_v2: [ 
@@ -44,10 +49,10 @@ export const onchain_fetch_config = {
 export const pools_config = {
   data_fetch: {
     delay: 5000,
-    multicall_size_limit: 500, // TODO: implement independently multicall splitting and pool database truncate
+    multicall_size_limit: 200, // TODO: implement independently multicall splitting and pool database truncate
   },
 
-  metadata_fetch_pools_number_limit: 4000,
+  metadata_fetch_pools_number_limit: 500,
 }
 
 export const debug_config = {

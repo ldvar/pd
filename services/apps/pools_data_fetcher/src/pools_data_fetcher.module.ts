@@ -1,21 +1,21 @@
 
-import { CacheModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
-import {  EthersModule } from "nestjs-ethers"
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { EthersModule } from "nestjs-ethers"
+import { ConfigService } from '@nestjs/config';
 
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
-//import { ScheduleModule } from '@nestjs/schedule';
+import { MetaModule, MetaService } from '@positivedelta/meta';
+import { ethers_chainId, eventEmitterConfig } from '@positivedelta/meta/utils';
 
 import { PoolsDataFetcherService } from './pools_data_fetcher.service';
 import { PoolsDataFetcherController } from './pools_data_fetcher.controller';
 
-import { MetaModule, MetaService } from '@positivedelta/meta';
-
-import { ethersConfig, ethers_chainId, eventEmitterConfig } from '@positivedelta/meta/utils';
 import { MulticallFetcherUtilsService } from './services/multicall_fetcher_utils.service';
+import { CacheModule } from '@nestjs/cache-manager';
+
 
 @Module({
     imports: [
@@ -47,7 +47,6 @@ import { MulticallFetcherUtilsService } from './services/multicall_fetcher_utils
         EthersModule.forRootAsync({
             imports: [MetaModule],
             inject: [ConfigService],
-            //ethersConfig;
             useFactory: (config: ConfigService) => {
                 return {
                     network: ethers_chainId,

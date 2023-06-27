@@ -2,7 +2,7 @@
 import { Module, Global } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-import { MetaService } from './meta.service';
+import { MetaService } from "@positivedelta/meta/meta.service";
 
 
 @Global()

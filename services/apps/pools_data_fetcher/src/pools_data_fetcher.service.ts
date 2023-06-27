@@ -1,19 +1,16 @@
 
-import { CACHE_MANAGER, Inject, Injectable, LogLevel, Logger } from '@nestjs/common';
+import { Inject, Injectable, LogLevel, Logger } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 Logger.overrideLogger(["log"] as LogLevel[]);
 
 import { Provider as MulticallProvider } from 'ethers-multicall';
-  
-import {
-  InjectEthersProvider,
 
-} from 'nestjs-ethers';
-
+import { InjectEthersProvider } from 'nestjs-ethers';
 import { ConfigService } from '@nestjs/config';
 
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 
-import { PoolMetadata, PoolType } from 'apps/pools/src/models/pool';
+import { PoolMetadata } from 'apps/pools/src/models/pool';
 
 import { PoolsRawDataPacket } from '@positivedelta/meta/models/pools_raw_data_packet';
 import { chainId, } from '@positivedelta/meta/config';
@@ -99,26 +96,38 @@ export class PoolsDataFetcherService {
   ///
 
   async fetchDataPacket(pools: PoolMetadata[]): Promise<PoolsRawDataPacket> {
-
-    // TODO reimplement as universal processing for multiple AMM/dex types
-
     Logger.log(">>> loading pools state data");
 
     // structured representation for funther call splitting
-    let calls_structure: CallStruct[] = this.multicallFetcherUtilsService.buildFullBatchCallStructure(pools);
+    let calls_structure: CallStruct[] = 
+      this.multicallFetcherUtilsService.buildFullBatchCallStructure(pools); //.slice(0,-1);
+
+    // print to debug failing pools
+    Logger.error(calls_structure.map(c => {
+      return { addr: c.contract.address, type: c.type };
+    }));
 
     // splitting calls by contract function id
     let call_groups = groupCallsByFuncNames(calls_structure);
     // construct actual contract calls with multicall
+    Logger.log(">>> building transactions...");
     let call_results_group_split = this.prepareSplitFetchGroups(call_groups);
 
     // actual contract data fetch
-    // TODO: work out potential network/data failures
+    // TODO: pools service gets partly wrong data for uni_v3 pools from api
+    // they just proceed as uni_v2, only this way
+    Logger.log(">>> sending transactions...");
     let out_res = await Promise.all(call_results_group_split);
+
     // reunite contract function calls before processing data
+    Logger.log(">>> response received, processing data...");
+    Logger.log(out_res);
     let uni_data = this.rebuildCallStructureFromGroups(calls_structure, out_res);
     // process data packets (only build structures and handle data type transforms, more calculations in pools_data_processor service)
     let pools_raw_data_packets = this.handleFullBatchProcessing(pools, calls_structure, uni_data);
+
+    Logger.log(">>> data preprocessing finished, reporting results...");
+    Logger.log(pools_raw_data_packets);
 
     let output = new PoolsRawDataPacket();    
     output.pools_data = pools_raw_data_packets;

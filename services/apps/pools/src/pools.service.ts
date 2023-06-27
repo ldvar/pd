@@ -1,13 +1,14 @@
 
-import { CACHE_MANAGER, Inject, Injectable, Logger} from '@nestjs/common';
+import { Inject, Injectable, Logger} from '@nestjs/common';
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Cache } from 'cache-manager';
 
 import { ConfigService } from '@nestjs/config';
 
-import { PoolMetadata } from './models/pool';
+import { PoolMetadata } from "@positivedelta/apps/pools/models/pool";
 
-import { DexGuruService } from './services/dex_guru.service';
-import { TokensData } from "./models/token";
+import { DexGuruService } from "@positivedelta/apps/pools/services/dex_guru.service";
+import { TokensData } from "@positivedelta/apps/pools/models/token";
 
 
 @Injectable()

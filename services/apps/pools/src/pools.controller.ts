@@ -12,10 +12,9 @@ import { ConfigService } from "@nestjs/config";
 
 import { patterns, pageLimit } from '@positivedelta/meta/config';
 import { DataPage } from '@positivedelta/meta/models/interactions';
-
-import { PoolsService } from "./pools.service";
-import { PoolMetadata } from "./models/pool";
-import { TokensData } from "./models/token";
+import { PoolMetadata } from "@positivedelta/apps/pools/models/pool";
+import { TokensData } from "@positivedelta/apps/pools/models/token";
+import { PoolsService } from "@positivedelta/apps/pools/pools.service";
 
 
 @Controller()

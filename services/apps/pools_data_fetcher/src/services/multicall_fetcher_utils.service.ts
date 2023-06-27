@@ -4,7 +4,7 @@ import { Contract } from "ethers-multicall";
 import { Injectable, Logger } from "@nestjs/common";
 
 import { abi as abi_v2 } from "@uniswap/v2-core/build/IUniswapV2Pair.json";
-import { abi as abi_v3 } from "@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json"
+import { abi as abi_v3 } from "@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json"
 
 import { PoolMetadata, PoolType } from "apps/pools/src/models/pool";
 

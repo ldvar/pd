@@ -40,9 +40,10 @@ export function get_uniswap_v3_call_struct(contract: Contract): CallStruct {
         PoolType.UniswapV3,
         onchain_fetch_config.abi_functions_patterns.uniswap_v3,
         undefined,
+        // TODO remove comments and fix processing
         (e) => {
             return [
-                e[0]["sqrtPriceX96"],
+                e[0][0],//["sqrtPriceX96"],
                 e[1],
             ];
         },

@@ -1,7 +1,7 @@
 
 import { Contract, ContractCall } from "ethers-multicall";
 
-import { PoolType } from "apps/pools/src/models/pool";
+import { PoolType } from "@positivedelta/apps/pools/models/pool";
 
 
 export class CallStruct {
@@ -24,6 +24,8 @@ export class CallStruct {
     }
 
     buildFunctions() {
+        // only closure with a standard call syntax worked
+        // TODO: move the it to config
         let uniswap_v2_temp = () => { return [
             this.contract.getReserves(),
         ]};
@@ -31,11 +33,12 @@ export class CallStruct {
             this.contract.slot0(),
             this.contract.liquidity()
         ]};
+        
         /*let functions = this.func_names.map(fn => { 
             return this.contract[fn] as ()=>ContractCall;
         });*/
-
         //this.functions = functions;
+
         this.functions = ((this.type == PoolType.UniswapV2) ? uniswap_v2_temp : uniswap_v3_temp)();
     }
 

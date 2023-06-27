@@ -1,14 +1,15 @@
 
 import { Injectable, Logger, Inject } from '@nestjs/common';
 
-import DexGuru, { ChainChoices, SwapsBurnsMintsListModel, SwapBurnMintModel } from 'dexguru-sdk';
+import { ChainChoices, SwapsBurnsMintsListModel, SwapBurnMintModel } from 'dexguru-sdk';
+import DexGuru from "dexguru-sdk/dist/sdk/dgSdk.js";
 
 import { ConfigService } from '@nestjs/config';
 
 import { chainId, ammTypes, pools_config } from '@positivedelta/meta/config';
 
-import { PoolMetadata, PoolType } from '../models/pool';
-import { TokenMetadata } from '../models/token';
+import { PoolMetadata, PoolType } from "@positivedelta/apps/pools/models/pool";
+import { TokenMetadata } from "@positivedelta/apps/pools/models/token";
 
 
 @Injectable()
@@ -28,14 +29,13 @@ export class DexGuruService {
   async recursiveRequest<D, R extends { total: number; data: D[]}>(sdk_fn: (...sdk_fn_args: any[]) => Promise<R>, ...args: any[]) {
     let raw_result: D[] = [];
 
-    // api pagination limit
+    // dexguru api pagination limit
     const limit = 100;
     let offset = 0;
     let total = 0;
 
     while (true) {
       try {
-      //let done = true;
 
       let temp_result = await sdk_fn(...args, undefined, undefined, undefined, limit, offset)
         .catch( (err) => {
@@ -47,14 +47,12 @@ export class DexGuruService {
 
       offset = raw_result.push(...temp_result.data);
 
-      //if (!done) continue;
-
       Logger.log("Loading pools metadata... " + offset.toString() + " of " + temp_result.total);
 
       if (offset >= temp_result.total) break;
       if (offset >= pools_config.metadata_fetch_pools_number_limit) break; // dexguru retries indefinitely after achieving IP request limit...
       } catch (e) {
-        
+        Logger.error(">>> Exception thrown while communicating with DexGuru");
       }
     }
 
@@ -78,6 +76,7 @@ export class DexGuruService {
           .map((amm) => amm.name);
     });
 
+    // show all
     Logger.error(needed_raw_amms);
 
     return [amm_names, types_dict];
@@ -119,6 +118,13 @@ export class DexGuruService {
       });
 
     Logger.log("Loaded " + pools.length.toString() + " AMM pools");
+
+    // printing to see that api gives you partially wrong objects
+    // pools seems to be uni_v3 but just marked as v3
+    [0,1].map(n => {
+      Logger.log("type: " + n.toString());
+      Logger.log(pools.filter(p => p.type == n));
+    });
 
     return pools;
   }

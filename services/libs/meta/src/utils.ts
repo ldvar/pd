@@ -1,6 +1,4 @@
 
-
-
 import { BINANCE_NETWORK, POLYGON_NETWORK, ARBITRUM_NETWORK } from 'nestjs-ethers';
 
 import { chainId } from './config';
@@ -15,9 +13,7 @@ export const ethers_chainId = ( () => {
         case "42161":
             return ARBITRUM_NETWORK;
     };
-} )()
-
-///
+} )();
 
 export const eventEmitterConfig = {
     "verboseMemoryLeak": true,
@@ -26,8 +22,6 @@ export const eventEmitterConfig = {
     "global": true,
     ignoreErrors: false,
 };
-
-///
 
 export const ethersConfig = {
     network: ethers_chainId,

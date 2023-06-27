@@ -1,8 +1,7 @@
 
 import { NestFactory } from '@nestjs/core';
 import { Transport } from '@nestjs/microservices';
-
-import { PoolsModule } from './pools.module';
+import { PoolsModule } from '@positivedelta/apps/pools/pools.module';
 
 
 async function bootstrap() {

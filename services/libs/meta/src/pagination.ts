@@ -1,6 +1,4 @@
 
-import { PoolMetadata } from "apps/pools/src/models/pool";
-
 const pools_fetch_events = {
     finished: "pagination.finished",
     page_loaded: "pagination.page_loaded",
