@@ -1,7 +1,8 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "declaration": false,
+    "declaration": true,
+    "incremental": true,
     "outDir": "../../dist/apps/pools_data_processor"
   },
   "include": ["src/**/*"],

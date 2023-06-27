@@ -5,6 +5,8 @@ import { ClientKafka, EventPattern, Payload } from "@nestjs/microservices";
 
 import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
 
+import { toQuantity } from "ethers";
+
 import { Observable } from "rxjs";
 
 import { TokensData } from "apps/pools/src/models/token";
@@ -16,6 +18,7 @@ import { DataPage } from "@positivedelta/meta/models/interactions";
 
 import { PoolsDataProcessorService } from "./pools_data_processor.service";
 import { FoundPathsDataPacket, FoundPathsRawDataPacket } from "./models/found_path.model";
+import { Hop, HotOpportunity, Route } from "./models/opportunity.model";
 
 
 @Controller()
@@ -51,7 +54,7 @@ export class PoolsDataProcessorController {
         this.tokens_data = tokens;
     }
 
-    addTokens(tokens) {
+    addTokens(tokens: TokensData) {
         this.tokens_data = { ...this.tokens_data, ...tokens };
         //Logger.error("test dict contatenation", this.tokens_data);
     }
@@ -143,5 +146,47 @@ export class PoolsDataProcessorController {
             patterns.opportunities_realtime,
             JSON.stringify(hot_opportunities),
         );
+    }
+
+    /// a handler for contract interaction debugging
+    @EventPattern("testOpp")
+    async testOpp() {
+        let t = new HotOpportunity();
+        let ts = ["USDC", "USDT"];
+
+        const ts_addr = (n: number) => {
+            return this.poolsDataProcessorService.tokenFromSymbol(ts[n]).address;
+        };
+        const hop = (i: number, o:number) => { 
+            let h = new Hop();
+
+            h.path = [ ts_addr(i), ts_addr(o) ];
+            h.data = (i == 0) ? "0x20bf018fddba3b352f3d913fe1c81b846fe0f490" : "0x2cf7252e74036d1da831d11089d326296e64a728" ;
+            h.protocol = 0;
+            return h;
+        };
+
+        t.input_token = ts_addr(0);
+        let decimals = this.poolsDataProcessorService.tokenFromSymbol(ts[0]).decimals
+        let multiplier = BigInt(1);
+        for (let i = 0; i < decimals; i++) {
+            multiplier *= BigInt(10);
+        };
+
+        t.best_input = toQuantity(BigInt(3) * multiplier);
+        t.expected_profit = 0.1;
+
+        let route = new Route();
+        route.part = 10000;  // total must be 10000
+        route.hops = [ hop(0, 1), hop(1, 0) ];
+
+        t.swap_data = this.poolsDataProcessorService.getFlashSwapParams(
+            t.input_token, 
+            t.best_input, 
+            [route]
+        );
+        
+        let testData = JSON.stringify([t]);
+        this.client.emit(patterns.opportunities_realtime, testData);
     }
 }

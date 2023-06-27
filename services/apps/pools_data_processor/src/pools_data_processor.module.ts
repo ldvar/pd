@@ -1,15 +1,13 @@
 
-import { Module, CacheModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { CacheModule } from "@nestjs/cache-manager";
 import { ClientsModule, Transport } from '@nestjs/microservices';
-
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
-import { PoolsDataProcessorController } from './pools_data_processor.controller';
-import { PoolsDataProcessorService } from './pools_data_processor.service';
-import { SwapMathService } from './services/swap_math.service';
-
 import { eventEmitterConfig } from '@positivedelta/meta/utils';
-
+import { PoolsDataProcessorService } from '@positivedelta/apps/pools_data_processor/pools_data_processor.service';
+import { SwapMathService } from '@positivedelta/apps/pools_data_processor/services/swap_math.service';
+import { PoolsDataProcessorController } from '@positivedelta/apps/pools_data_processor/pools_data_processor.controller';
 
 
 @Module({

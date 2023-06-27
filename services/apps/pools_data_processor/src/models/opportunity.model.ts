@@ -18,7 +18,7 @@ export class FlashSwapParams {
 // slightly abundant representation for easy processing
 export class HotOpportunity {
     public input_token: string;
-    public best_input: number;
+    public best_input: string;
     public expected_profit: number;
 
     public swap_data: FlashSwapParams;

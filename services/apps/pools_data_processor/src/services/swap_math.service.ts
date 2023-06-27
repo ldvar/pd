@@ -1,15 +1,12 @@
 
 import { Injectable, Logger, Inject } from '@nestjs/common';
 
-//import { ConfigService } from '@nestjs/config';
-
 import { BigintIsh, Token, TokenAmount } from "@uniswap/sdk";
 
 const math = require('mathjs');
 
-//import { chainId, ammTypes } from '@positivedelta/meta/config';
 import { PoolRawDataPacket } from "@positivedelta/meta/models/pools_raw_data_packet";
-import { PoolProcessedMetadata } from '../models/pools_processed_metadata';
+import { PoolProcessedMetadata } from '@positivedelta/apps/pools_data_processor/models/pools_processed_metadata';
 
 
 @Injectable()
@@ -42,31 +39,40 @@ export class SwapMathService {
     }
 
     priceImpactCorrectionMultiplier(input_amount, r0) {
-        return 1 / (1 + input_amount/r0);
+        return 1 / (1 + (input_amount/r0));
     }
 
     calculateOptimalSwapSequenceParams(swap_sequence) {
-        let compute_range = math.range(0.0001, 20000, 0.5)._data;
+        // TODO: calculate ranges with respect to liquidity or at least decimals
+        let compute_range = math.range(0.00001, 10000, 0.5)._data;
+        
         // compute swap output space
         let swap_profits = compute_range.map( x => this.calculateSwapSequenceOutput(x, swap_sequence) - x );
 
-        // argmax for getting best input
-        let max_idx = math.max(swap_profits)._data[0];
+        try {
+            // argmax for getting best input
+            let max_idx = math.max(swap_profits)._data[0];
 
-        let x_max = compute_range[max_idx];
-        let y_max = swap_profits[max_idx];
-        
-        return [x_max, y_max];
+            let x_max = compute_range[max_idx];
+            let y_max = swap_profits[max_idx];
+            
+            let res = [x_max, y_max];
+            Logger.error(res);
+            return res;
+        } catch (e) {
+            return [0, -1]; // impossible to achieve profit?
+        }
     }
 
     calculateLinearSwapQByReserves(r0: number, r1: number, fee_prop: number) {
-        const fee_k = 1.0 - (fee_prop / 1.0e6);
+        const e =  1.0e6;
+        let fee_k = 1.0 - (fee_prop / e);
 
-        if (r0 === 0.0 || r1 === 0.0) { // invalid data fallback
-            return 0.0;
+        if ( (r0 <= 0 || r1 <= 0) || !(!!r0 && !!r1)) { // invalid data fallback
+            return null;
         }
 
-        const q = r1 / r0;
+        let q = r1 / r0;
         return q * fee_k;
     }
 
@@ -91,5 +97,4 @@ export class SwapMathService {
         const amount_str = token_amount.toExact();
         return parseFloat(amount_str);
     }
-
 }

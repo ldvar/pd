@@ -3,14 +3,12 @@ import { Module } from '@nestjs/common';
 
 import { EthersModule } from 'nestjs-ethers';
 import { ConfigService } from '@nestjs/config';
-
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
-import { ArbitrageExecuteController } from './arbitrage_execute.controller';
-import { ArbitrageExecuteService } from './arbitrage_execute.service';
-
+import { ArbitrageExecuteService } from '@positivedelta/apps/arbitrage_execute/arbitrage_execute.service';
 import { ethers_chainId } from '@positivedelta/meta/utils';
 import { MetaModule } from '@positivedelta/meta';
+import { ArbitrageExecuteController } from '@positivedelta/apps/arbitrage_execute/arbitrage_execute.controller';
 
 
 @Module({

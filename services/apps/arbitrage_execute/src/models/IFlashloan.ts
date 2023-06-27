@@ -1,13 +1,11 @@
 
-import { Hop, Route } from "apps/pools_data_processor/src/models/opportunity.model"
+// TODO: for adequate types - link flashswap repo
 
-export class FlashParams {
-    flashLoanPool: string;
-    loanAmount: BigInt;
-    routes: Route[];
-}
+/*import { Hop, Route } from "apps/pools_data_processor/src/models/opportunity.model"
+
+import * as FlashloanJson from "./../abis/Flashloan.json";
 
 export interface IFlashloan {
-    dodoFlashLoan(params: FlashParams);
+    dodoFlashLoan(params);
 }
-
+*/
